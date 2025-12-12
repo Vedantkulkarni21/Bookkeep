@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>BookKeepPro | Admin Panel</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Segoe UI, system-ui, sans-serif;background:#f1f7fb;color:#222;min-height:100vh;display:flex;flex-direction:column}
+    .header{background:#BEE2FA;padding:18px 22px;display:flex;align-items:center;gap:16px}
+    .header img{width:220px;cursor:pointer}
+    .main{max-width:920px;margin:28px auto;padding:20px;background:#fff;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,0.06);flex:1}
+    .title{text-align:center;margin-bottom:18px}
+    .title h1{font-size:20px;color:#0b2540}
+    .subtitle{color:#6b7a86;font-size:13px;margin-top:6px}
+    .users{margin-top:18px;display:grid;gap:12px}
+    .user-card{display:flex;align-items:center;justify-content:space-between;padding:14px;border:1px solid #e6edf3;border-radius:10px}
+    .user-left{display:flex;gap:14px;align-items:center}
+    .avatar{width:56px;height:56px;border-radius:50%;background:#e9f3fb;display:flex;align-items:center;justify-content:center;font-weight:700;color:#0b2540}
+    .user-info .name{font-weight:700;color:#0b2540}
+    .user-info .meta{font-size:13px;color:#6b7a86}
+    .btn-view{background:#2D5A6B;color:#fff;padding:8px 12px;border-radius:8px;text-decoration:none}
+    .empty{padding:40px;text-align:center;color:#6b7a86}
+    .footer{background:#BEE2FA;padding:20px;text-align:center;margin-top:20px}
+    .footer img{width:160px}
+    .footer small{display:block;color:#555;margin-top:8px}
+  </style>
+</head>
+<body>
+  <div class="header">
+    <img src="/images/bookkeeppro-logo.png" alt="logo" onclick="location.href='/home'">
+  </div>
+
+  <div class="main">
+    <div class="title">
+      <h1>WELCOME TO BOOKKEEPRO ADMIN PANEL</h1>
+      <div class="subtitle">Current Users List</div>
+    </div>
+
+    <div id="users" class="users">
+      <div class="empty">Loading users...</div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <img src="/images/bookkeeppro-logo.png" alt="logo">
+    <small>Copyright © 2024 Bookkeepro Business Solutions. All rights reserved.</small>
+  </div>
+
+  <script src="/js/admin.js"></script>
+</body>
+</html>

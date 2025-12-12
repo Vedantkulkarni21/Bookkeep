@@ -41,3 +41,13 @@ def delete_uploaded_file(db: Session, drive_file_id: str, owner_id: int):
         db.commit()
         return True
     return False
+
+# ...existing code...
+from sqlalchemy.orm import Session
+from app.models import User
+# ...existing code...
+
+def get_all_users(db: Session):
+    return db.query(User).all()
+
+# ...existing code...
