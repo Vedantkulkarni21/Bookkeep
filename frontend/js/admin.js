@@ -1,3 +1,85 @@
+// console.log("✅ admin.js loaded");
+
+// document.addEventListener("DOMContentLoaded", () => {
+//   console.log("✅ DOM ready");
+
+//   const user = {
+//     name: "Alex Liberman",
+//     role: "Business Document Filing",
+//     email: "alexliberman@gmail.com"
+//   };
+
+//   const documents = [
+//     "Business Registration Certificate",
+//     "Registration Letter",
+//     "Letter of Incorporation",
+//     "Tax Document",
+//     "Bank Statement",
+//     "Address Proof"
+//   ];
+
+//   document.getElementById("detailName").textContent = user.name;
+//   document.getElementById("detailRole").textContent = user.role;
+//   document.getElementById("detailEmail").textContent = user.email;
+//   document.getElementById("uploadStatus").textContent =
+//     `${documents.length}/${documents.length}`;
+
+//   const tbody = document.getElementById("docTable");
+//   tbody.innerHTML = "";
+
+//   documents.forEach((doc, i) => {
+//     const tr = document.createElement("tr");
+
+//     tr.innerHTML = `
+//       <td>
+//         ${i + 1}. ${doc}
+//         <button class="view-btn">View</button>
+//       </td>
+//       <td><input type="checkbox" class="approve"></td>
+//       <td><input type="checkbox" class="reject"></td>
+//     `;
+
+//     const approve = tr.querySelector(".approve");
+//     const reject = tr.querySelector(".reject");
+
+//     approve.addEventListener("change", () => {
+//       if (approve.checked) reject.checked = false;
+//     });
+
+//     reject.addEventListener("change", () => {
+//       if (reject.checked) approve.checked = false;
+//     });
+
+//     tr.querySelector(".view-btn").onclick = () =>
+//       alert("Viewing document: " + doc);
+
+//     tbody.appendChild(tr);
+//   });
+// });
+
+// let timeline = 0;
+
+// function incrementTimeline() {
+//   timeline++;
+//   document.getElementById("timelineValue").textContent = timeline;
+// }
+
+// function decrementTimeline() {
+//   if (timeline > 0) timeline--;
+//   document.getElementById("timelineValue").textContent = timeline;
+// }
+
+// function approveForFiling() {
+//   alert(`Approved for filing\nTimeline: ${timeline} days`);
+// }
+
+// function goBack() {
+//   alert("Back to users (hook later)");
+// }
+
+
+
+
 const token = localStorage.getItem('token');
 const role = localStorage.getItem('role');
 
@@ -33,7 +115,8 @@ async function loadUsers() {
         <div class="user-left">
           <div class="avatar">${(u.name||'U').charAt(0).toUpperCase()}</div>
           <div class="user-info">
-            <div class="name" onclick="viewUserDetails(${u.id}, event)">User Name: ${u.name || '—'}</div>
+            <div class="name" onclick="openUser(${u.id})">
+User Name: ${u.name || '—'}</div>
             <div class="meta">Role Type: ${u.role || 'user'}</div>
             <div class="meta">Email: ${u.email || '—'}</div>
           </div>
@@ -47,62 +130,67 @@ async function loadUsers() {
   }
 }
 
-async function viewUserDetails(userId, event) {
-  event.stopPropagation();
+// async function viewUserDetails(userId, event) {
+//   event.stopPropagation();
   
-  try {
-    const res = await fetch(`/api/auth/admin/users/${userId}/documents`, {
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
+//   try {
+//     const res = await fetch(`/api/auth/admin/users/${userId}/documents`, {
+//       headers: { 'Authorization': 'Bearer ' + token }
+//     });
 
-    if (!res.ok) {
-      alert('Error loading user details');
-      return;
-    }
+//     if (!res.ok) {
+//       alert('Error loading user details');
+//       return;
+//     }
 
-    const data = await res.json();
-    const user = data.user;
-    const docs = data.documents || [];
+//     const data = await res.json();
+//     const user = data.user;
+//     const docs = data.documents || [];
 
-    // Update detail view
-    document.getElementById('detailName').textContent = user.name;
-    document.getElementById('detailRole').textContent = user.role;
-    document.getElementById('detailEmail').textContent = user.email;
-    document.getElementById('uploadStatus').textContent = `Document Upload Status: ${docs.length}/${docs.length || 0}`;
+//     // Update detail view
+//     document.getElementById('detailName').textContent = user.name;
+//     document.getElementById('detailRole').textContent = user.role;
+//     document.getElementById('detailEmail').textContent = user.email;
+//     document.getElementById('uploadStatus').textContent = `Document Upload Status: ${docs.length}/${docs.length || 0}`;
 
-    // Populate documents table
-    const tbody = document.getElementById('docTable');
-    if (docs.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#6b7a86">No documents uploaded</td></tr>';
-    } else {
-      tbody.innerHTML = docs.map(d => `
-        <tr>
-          <td>${d.filename}</td>
-          <td><button class="view-btn" onclick="viewDocument('${d.drive_file_id}')">View</button></td>
-          <td><input type="checkbox"></td>
-          <td><input type="checkbox"></td>
-          <td><span style="font-size:12px">— 0 +</span></td>
-        </tr>
-      `).join('');
-    }
+//     // Populate documents table
+//     const tbody = document.getElementById('docTable');
+//     if (docs.length === 0) {
+//       tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#6b7a86">No documents uploaded</td></tr>';
+//     } else {
+//       tbody.innerHTML = docs.map(d => `
+//         <tr>
+//           <td>${d.filename}</td>
+//           <td><button class="view-btn" onclick="viewDocument('${d.drive_file_id}')">View</button></td>
+//           <td><input type="checkbox"></td>
+//           <td><input type="checkbox"></td>
+//           <td><span style="font-size:12px">— 0 +</span></td>
+//         </tr>
+//       `).join('');
+//     }
 
-    // Switch views
-    document.getElementById('listView').style.display = 'none';
-    document.getElementById('detailView').classList.add('active');
-  } catch (err) {
-    alert('Error: ' + err.message);
-  }
-}
+//     // Switch views
+//     document.getElementById('listView').style.display = 'none';
+//     document.getElementById('detailView').classList.add('active');
+//   } catch (err) {
+//     alert('Error: ' + err.message);
+//   }
+// }
 
-function goBack() {
-  document.getElementById('listView').style.display = 'block';
-  document.getElementById('detailView').classList.remove('active');
-}
+// function goBack() {
+//   document.getElementById('listView').style.display = 'block';
+//   document.getElementById('detailView').classList.remove('active');
+// }
 
 function viewDocument(fileId) {
   // Open document in new tab
   window.open(`https://drive.google.com/file/d/${fileId}/view`, '_blank');
 }
+
+function openUser(userId) {
+  window.location.href = `/admin-user-detail?user_id=${userId}`;
+}
+
 
 // Load users on page load
 loadUsers();
