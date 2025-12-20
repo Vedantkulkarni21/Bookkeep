@@ -248,6 +248,16 @@
       </div>
     </footer>
 
+
+    <script>
+  const token = localStorage.getItem("token");
+  const role = localStorage.getItem("role");
+
+  if (!token || role?.toLowerCase() !== "user") {
+    window.location.href = "/login";
+  }
+</script>
+
     <script>
       /* Render upload items and wire to /api/upload/business-document — kept behavior from your original page but styled */
       (function () {
@@ -294,7 +304,7 @@
           st.textContent = "Uploading...";
           const fd = new FormData();
           fd.append("file", f);
-          const token = localStorage.getItem("access_token");
+          const token = localStorage.getItem("token");
           const headers = token ? { Authorization: "Bearer " + token } : {};
           try {
             const res = await fetch("/api/upload/business-document", {
@@ -318,7 +328,7 @@
         async function deleteFile(i) {
           if (!uploadedFiles[i]) return alert("No file to delete");
           if (!confirm("Delete file?")) return;
-          const token = localStorage.getItem("access_token");
+          const token = localStorage.getItem("token");
           const res = await fetch(
             "/api/upload/business-document/" + uploadedFiles[i],
             {

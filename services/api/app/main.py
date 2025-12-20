@@ -1,22 +1,36 @@
 import os
-from fastapi import FastAPI
+import logging
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-from app.routers import auth, upload
-from app.db import engine
 from app import models
+from app.db import engine
 
-# Create DB tables
-models.Base.metadata.create_all(bind=engine)
+log = logging.getLogger("uvicorn.error")
 
+# create app early so mounts can reference it
 app = FastAPI(title="BookKeepPro API")
 
-# Include routers (only once)
-app.include_router(auth.router)
-app.include_router(upload.router)
+# create database tables
+models.Base.metadata.create_all(bind=engine)
 
-# CORS - allow all for local/dev
+# include routers from app.routers (they should expose `router`)
+try:
+    from app.routers import auth, upload  # type: ignore
+    try:
+        app.include_router(auth.router)
+    except Exception as exc:
+        log.exception("Failed to include auth.router: %s", exc)
+
+    try:
+        app.include_router(upload.router)
+    except Exception as exc:
+        log.exception("Failed to include upload.router: %s", exc)
+except Exception as exc:
+    log.exception("Failed to import routers package: %s", exc)
+
+# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -25,58 +39,64 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# FRONTEND_DIR relative to this file:
-# this file: myapp/services/api/app/main.py
-# we want: myapp/frontend => go up 3 levels then "frontend"
-FRONTEND_DIR = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "..", "..", "..", "frontend")
-)
+# Frontend directory (project-root/frontend)
+FRONTEND_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "frontend"))
 
-# Ensure folder exists (helpful for debugging)
-if not os.path.isdir(FRONTEND_DIR):
-    raise RuntimeError(f"Frontend directory not found at: {FRONTEND_DIR}")
+def mount_if_exists(route: str, subdir: str, name: str):
+    path = os.path.join(FRONTEND_DIR, subdir)
+    if os.path.isdir(path):
+        app.mount(route, StaticFiles(directory=path), name=name)
+        log.info("Mounted static %s -> %s", route, path)
+    else:
+        log.debug("Static directory not found, skipping mount: %s", path)
 
-# Serve static files from root endpoints:
-app.mount("/frontend", StaticFiles(directory=FRONTEND_DIR), name="frontend")
-app.mount("/js", StaticFiles(directory=os.path.join(FRONTEND_DIR, "js")), name="js")
-app.mount("/images", StaticFiles(directory=os.path.join(FRONTEND_DIR, "images")), name="images")
+# mount common static folders only when present
+mount_if_exists("/js", "js", "js")
+mount_if_exists("/images", "images", "images")
+mount_if_exists("/css", "css", "css")
 
-# HTML routes (serve files from frontend folder)
+
+def serve_frontend_file(filename: str):
+    full = os.path.join(FRONTEND_DIR, filename)
+    if os.path.isfile(full):
+        return FileResponse(full)
+    log.warning("Frontend file not found: %s", full)
+    raise HTTPException(status_code=404, detail="Page not found")
+
+# simple frontend routes (safe if frontend folder or files missing)
 @app.get("/", tags=["frontend"])
 def home():
-    return FileResponse(os.path.join(FRONTEND_DIR, "home.html"))
+    return serve_frontend_file("home.html")
 
 @app.get("/home", tags=["frontend"])
 def home_page():
-    return FileResponse(os.path.join(FRONTEND_DIR, "home.html"))
+    return serve_frontend_file("home.html")
 
 @app.get("/login", tags=["frontend"])
 def login_page():
-    return FileResponse(os.path.join(FRONTEND_DIR, "login.html"))
+    return serve_frontend_file("login.html")
 
 @app.get("/signup", tags=["frontend"])
 def signup_page():
-    return FileResponse(os.path.join(FRONTEND_DIR, "signup.html"))
+    return serve_frontend_file("signup.html")
 
 @app.get("/dashboard", tags=["frontend"])
 def dashboard_page():
-    return FileResponse(os.path.join(FRONTEND_DIR, "dashboard.html"))
+    return serve_frontend_file("dashboard.html")
 
 @app.get("/admin-dashboard", tags=["frontend"])
 def admin_dashboard_page():
-    return FileResponse(os.path.join(FRONTEND_DIR, "admin-dashboard.html"))
-
-@app.get("/upload/business", tags=["frontend"])
-def upload_business_page():
-    return FileResponse(os.path.join(FRONTEND_DIR, "upload_business.html"))
+    return serve_frontend_file("admin-dashboard.html")
 
 @app.get("/admin-user-detail", tags=["frontend"])
-def admin_user_detail_page():
-    return FileResponse(
-        os.path.join(FRONTEND_DIR, "admin-user-detail.html")
-    )
+def admin_user_detail():
+    return serve_frontend_file("admin-user-detail.html")
 
 
-@app.get("/upload/personal", tags=["frontend"])
-def upload_personal_page():
-    return FileResponse(os.path.join(FRONTEND_DIR, "upload_personal.html"))
+@app.get("/upload-personal", tags=["frontend"])
+def upload_personal():
+    return serve_frontend_file("upload-personal.html")
+
+@app.get("/upload-business", tags=["frontend"])
+def upload_business():
+    return serve_frontend_file("upload-business.html")

@@ -207,86 +207,95 @@
     <small>© 2024 Bookkeepro Business Solutions</small>
   </div>
 
-  <!-- ✅ INTERNAL JS (WORKING) -->
-  <script>
-  const params = new URLSearchParams(window.location.search);
-  const userId = params.get("user_id");
+// ...existing code...
+<script>
+const params = new URLSearchParams(window.location.search);
+const userId = params.get("user_id");
+const token = localStorage.getItem("token");
+const role = localStorage.getItem("role");
 
-  if (!userId) {
-    alert("No user selected");
-    window.location.href = "/admin-dashboard.html";
-  }
+if (!token || role !== "admin") {
+  localStorage.clear();
+  window.location.href = "/login";
+}
 
-  document.addEventListener("DOMContentLoaded", async () => {
+if (!userId) {
+  alert("No user selected");
+  window.location.href = "/admin-dashboard";
+}
 
-    // 🔹 TEMP MOCK (replace with API later)
-    const user = {
-      name: "User " + userId,
-      role: "Business Document Filing",
-      email: `user${userId}@example.com`
-    };
+let refreshInterval = null;
 
-    const documents = [
-      "Business Registration Certificate",
-      "Registration Letter",
-      "Letter of Incorporation",
-      "Tax Document",
-      "Bank Statement",
-      "Address Proof"
-    ];
+async function loadUserDetails() {
+  try {
+    const res = await fetch(`/api/auth/admin/users/${userId}/documents`, {
+      headers: { "Authorization": "Bearer " + token }
+    });
 
-    document.getElementById("detailName").textContent = user.name;
-    document.getElementById("detailRole").textContent = user.role;
-    document.getElementById("detailEmail").textContent = user.email;
-    document.getElementById("uploadStatus").textContent =
-      documents.length + "/" + documents.length;
+    if (res.status === 401 || res.status === 403) {
+      localStorage.clear();
+      window.location.href = "/login";
+      return;
+    }
+
+    const data = await res.json();
+    const user = data.user || {};
+    const docs = data.documents || [];
+
+    document.getElementById("detailName").textContent = user.name || "—";
+    document.getElementById("detailRole").textContent = user.role || "—";
+    document.getElementById("detailEmail").textContent = user.email || "—";
+    document.getElementById("uploadStatus").textContent = `${docs.length}/${docs.length}`;
 
     const tbody = document.getElementById("docTable");
-    tbody.innerHTML = "";
+    if (docs.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#6b7a86">No documents uploaded</td></tr>';
+      return;
+    }
 
-    documents.forEach((doc, i) => {
+    tbody.innerHTML = "";
+    docs.forEach((d, i) => {
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td>${i + 1}. ${doc}
-          <button class="view-btn">View</button>
+        <td>${i + 1}. ${d.filename}
+          <button class="view-btn" data-drive="${d.drive_file_id}">View</button>
         </td>
         <td><input type="checkbox" class="approve"></td>
         <td><input type="checkbox" class="reject"></td>
       `;
-
       const approve = tr.querySelector(".approve");
       const reject = tr.querySelector(".reject");
+      approve.addEventListener("change", () => { if (approve.checked) reject.checked = false; });
+      reject.addEventListener("change", () => { if (reject.checked) approve.checked = false; });
 
-      approve.onchange = () => { if (approve.checked) reject.checked = false; };
-      reject.onchange = () => { if (reject.checked) approve.checked = false; };
-
-      tr.querySelector(".view-btn").onclick = () =>
-        alert("Viewing document: " + doc);
+      tr.querySelector(".view-btn").addEventListener("click", () => {
+        window.open(`https://drive.google.com/file/d/${d.drive_file_id}/view`, "_blank");
+      });
 
       tbody.appendChild(tr);
     });
-  });
-
-  let timeline = 0;
-
-  function incrementTimeline() {
-    timeline++;
-    document.getElementById("timelineValue").textContent = timeline;
+  } catch (err) {
+    console.error("Error loading user details", err);
   }
+}
 
-  function decrementTimeline() {
-    if (timeline > 0) timeline--;
-    document.getElementById("timelineValue").textContent = timeline;
-  }
+document.addEventListener("DOMContentLoaded", () => {
+  loadUserDetails();
+  refreshInterval = setInterval(loadUserDetails, 5000); // refresh every 5s to reflect live uploads
+});
 
-  function approveForFiling() {
-    alert(`Approved for filing\nTimeline: ${timeline} days\nUser ID: ${userId}`);
-  }
+window.addEventListener("beforeunload", () => {
+  if (refreshInterval) clearInterval(refreshInterval);
+});
 
-  function goBack() {
-    window.location.href = "/admin-dashboard.html";
-  }
+// timeline functions (keep same behavior as before)
+let timeline = 0;
+function incrementTimeline() { timeline++; document.getElementById("timelineValue").textContent = timeline; }
+function decrementTimeline() { if (timeline > 0) timeline--; document.getElementById("timelineValue").textContent = timeline; }
+function approveForFiling() { alert(`Approved for filing\nTimeline: ${timeline} days\nUser ID: ${userId}`); }
+function goBack() { window.location.href = "/admin-dashboard"; }
 </script>
+// ...existing code...
 
 </body>
 </html>

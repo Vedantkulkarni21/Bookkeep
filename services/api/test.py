@@ -1,6 +1,7 @@
 from app.crud import create_user
 from app.db import SessionLocal
 
+
 db = SessionLocal()
 admin_user = create_user(
     db,

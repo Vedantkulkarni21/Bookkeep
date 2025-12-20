@@ -13,6 +13,7 @@ from app.db import get_db
 import app.crud as crud
 from app.routers.auth import get_current_user_real
 
+
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/upload", tags=["upload"])
 
@@ -22,6 +23,47 @@ OAUTH_TOKEN_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "..",
 DRIVE_FOLDER_ID = os.getenv("DRIVE_FOLDER_ID", None)  # set in .env if you have one
 
 def get_drive_service():
+    env_path = os.getenv("GOOGLE_OAUTH_TOKEN_PATH")
+    base = os.path.dirname(__file__)
+    candidates = []
+
+    if env_path:
+        candidates.append(os.path.normpath(env_path))
+
+    candidates.append(os.path.normpath(os.path.join(base, "../../../../oauth_token.json")))
+    candidates.append(os.path.normpath(os.path.join(base, "../../../oauth_token.json")))
+    candidates.append(os.path.normpath(os.path.join(os.getcwd(), "oauth_token.json")))
+    candidates.append(os.path.normpath(OAUTH_TOKEN_FILE))
+
+    logger.info(f"[upload] token lookup candidates: {candidates}")
+
+    token_path = None
+    for p in candidates:
+        if p and os.path.exists(p):
+            token_path = p
+            break
+
+    if not token_path:
+        raise HTTPException(
+            status_code=400,
+            detail="OAuth token file not found in expected locations"
+        )
+
+    logger.info(f"[upload] Using OAuth token file: {token_path}")
+
+    try:
+        creds = OAuth2Credentials.from_authorized_user_file(
+            token_path, scopes=SCOPES
+        )
+        return build("drive", "v3", credentials=creds)
+
+    except Exception as e:
+        logger.exception("Failed to initialize Google Drive client")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Google Drive init failed: {e}"
+        )
+
     """
     Look for oauth_token.json in several sensible locations:
       1) Path from GOOGLE_OAUTH_TOKEN_PATH env var (if set)
@@ -31,6 +73,7 @@ def get_drive_service():
 
     Logs the candidates and uses the first match. Raises HTTPException(400) if not found.
     """
+    # log.info(f"Using OAuth token file: {token_path}")
     env_path = os.getenv("GOOGLE_OAUTH_TOKEN_PATH")
     base = os.path.dirname(__file__)
     candidates = []
@@ -72,6 +115,93 @@ def get_drive_service():
     except Exception as e:
         log.exception("Failed to build Drive service from token")
         raise HTTPException(status_code=500, detail=f"Failed to initialize Google Drive client: {e}")
+
+@router.post("/personal-document")
+async def upload_personal_document(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user_real)
+):
+    tmp_path = None
+    try:
+        service = get_drive_service()
+
+        temp_dir = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "..", "..", "..", "temp")
+        )
+        os.makedirs(temp_dir, exist_ok=True)
+
+        with tempfile.NamedTemporaryFile(
+            dir=temp_dir,
+            delete=False,
+            suffix=os.path.splitext(file.filename)[1]
+        ) as tmp:
+            content = await file.read()
+            tmp.write(content)
+            tmp_path = tmp.name
+
+        file_metadata = {"name": file.filename}
+        if DRIVE_FOLDER_ID:
+            file_metadata["parents"] = [DRIVE_FOLDER_ID]
+
+        media = MediaFileUpload(tmp_path, mimetype=file.content_type)
+        drive_file = (
+            service.files()
+            .create(body=file_metadata, media_body=media, fields="id")
+            .execute()
+        )
+
+        drive_id = drive_file.get("id")
+
+        try:
+            crud.create_uploaded_file(
+                db=db,
+                filename=file.filename,
+                drive_file_id=drive_id,
+                content_type=file.content_type,
+                owner_id=current_user.id,
+            )
+        except Exception:
+            logger.exception("Failed to store personal upload metadata")
+
+        return {"file_id": drive_id, "filename": file.filename}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("Personal upload error")
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        if tmp_path and os.path.exists(tmp_path):
+            try:
+                time.sleep(0.1)
+                os.remove(tmp_path)
+            except Exception:
+                logger.warning("Temp cleanup failed")
+
+@router.delete("/personal-document/{file_id}")
+async def delete_personal_document(
+    file_id: str,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user_real)
+):
+    try:
+        service = get_drive_service()
+        service.files().delete(fileId=file_id).execute()
+
+        deleted = crud.delete_uploaded_file(
+            db=db,
+            drive_file_id=file_id,
+            owner_id=current_user.id,
+        )
+
+        return {"deleted": bool(deleted)}
+
+    except Exception as e:
+        logger.exception("Personal delete error")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 
 @router.post("/business-document")
 async def upload_business_document(
