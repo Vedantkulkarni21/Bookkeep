@@ -100,3 +100,9 @@ def upload_personal():
 @app.get("/upload-business", tags=["frontend"])
 def upload_business():
     return serve_frontend_file("upload-business.html")
+
+
+@app.post("/logout")
+def logout():
+    # JWT is stateless → nothing to invalidate server-side
+    return {"message": "Logged out"}
