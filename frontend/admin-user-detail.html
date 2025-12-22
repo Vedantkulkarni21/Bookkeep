@@ -208,6 +208,7 @@
   </div>
 
 // ...existing code...
+
 <script>
 const params = new URLSearchParams(window.location.search);
 const userId = params.get("user_id");
@@ -245,11 +246,14 @@ async function loadUserDetails() {
     document.getElementById("detailName").textContent = user.name || "—";
     document.getElementById("detailRole").textContent = user.role || "—";
     document.getElementById("detailEmail").textContent = user.email || "—";
-    document.getElementById("uploadStatus").textContent = `${docs.length}/${docs.length}`;
+    document.getElementById("uploadStatus").textContent =
+      docs.length ? `${docs.length} uploaded` : "0 uploaded";
 
     const tbody = document.getElementById("docTable");
+
     if (docs.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#6b7a86">No documents uploaded</td></tr>';
+      tbody.innerHTML =
+        '<tr><td colspan="3" style="text-align:center;color:#6b7a86">No documents uploaded</td></tr>';
       return;
     }
 
@@ -258,18 +262,28 @@ async function loadUserDetails() {
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>${i + 1}. ${d.filename}
-          <button class="view-btn" data-drive="${d.drive_file_id}">View</button>
+          <button class="view-btn">View</button>
         </td>
         <td><input type="checkbox" class="approve"></td>
         <td><input type="checkbox" class="reject"></td>
       `;
+
       const approve = tr.querySelector(".approve");
       const reject = tr.querySelector(".reject");
-      approve.addEventListener("change", () => { if (approve.checked) reject.checked = false; });
-      reject.addEventListener("change", () => { if (reject.checked) approve.checked = false; });
+
+      approve.addEventListener("change", () => {
+        if (approve.checked) reject.checked = false;
+      });
+
+      reject.addEventListener("change", () => {
+        if (reject.checked) approve.checked = false;
+      });
 
       tr.querySelector(".view-btn").addEventListener("click", () => {
-        window.open(`https://drive.google.com/file/d/${d.drive_file_id}/view`, "_blank");
+        window.open(
+          `https://drive.google.com/file/d/${d.drive_file_id}/view`,
+          "_blank"
+        );
       });
 
       tbody.appendChild(tr);
@@ -281,21 +295,29 @@ async function loadUserDetails() {
 
 document.addEventListener("DOMContentLoaded", () => {
   loadUserDetails();
-  refreshInterval = setInterval(loadUserDetails, 5000); // refresh every 5s to reflect live uploads
+  refreshInterval = setInterval(loadUserDetails, 5000);
 });
 
 window.addEventListener("beforeunload", () => {
   if (refreshInterval) clearInterval(refreshInterval);
 });
 
-// timeline functions (keep same behavior as before)
 let timeline = 0;
-function incrementTimeline() { timeline++; document.getElementById("timelineValue").textContent = timeline; }
-function decrementTimeline() { if (timeline > 0) timeline--; document.getElementById("timelineValue").textContent = timeline; }
-function approveForFiling() { alert(`Approved for filing\nTimeline: ${timeline} days\nUser ID: ${userId}`); }
-function goBack() { window.location.href = "/admin-dashboard"; }
+function incrementTimeline() {
+  timeline++;
+  document.getElementById("timelineValue").textContent = timeline;
+}
+function decrementTimeline() {
+  if (timeline > 0) timeline--;
+  document.getElementById("timelineValue").textContent = timeline;
+}
+function approveForFiling() {
+  alert(`Approved for filing\nTimeline: ${timeline} days\nUser ID: ${userId}`);
+}
+function goBack() {
+  window.location.href = "/admin-dashboard";
+}
 </script>
-// ...existing code...
 
 </body>
 </html>

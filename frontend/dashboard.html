@@ -74,7 +74,7 @@
     .download-btn {
       padding: 12px 18px;
       border-radius: 10px;
-      background: #0077c8;
+      background: #FF7F11;
       color: #fff;
       border: none;
       cursor: pointer;
@@ -189,44 +189,52 @@
   </div>
 
   <!-- Logic -->
-  <script>
-    // Auth guard
-    const token = localStorage.getItem("token");
-    const role = localStorage.getItem("role");
+<script>
+  /* ================= AUTH GUARD ================= */
+  const token = localStorage.getItem("token");
+  const role = localStorage.getItem("role");
 
-    if (!token || role?.toLowerCase() !== "user") {
-      window.location.href = "/login";
-    }
+  if (!token || role?.toLowerCase() !== "user") {
+    window.location.href = "/login";
+  }
 
-    const personalBtn = document.getElementById("personalBtn");
-    const businessBtn = document.getElementById("businessBtn");
+  const personalBtn = document.getElementById("personalBtn");
+  const businessBtn = document.getElementById("businessBtn");
 
-    // Enable buttons if already downloaded in this session
-    if (sessionStorage.getItem("checklistDownloaded") === "true") {
-      enableButtons();
-    }
+  const CHECKLIST_KEY = "checklistDownloaded";
 
-    function markDownloaded() {
-      sessionStorage.setItem("checklistDownloaded", "true");
-      setTimeout(enableButtons, 500); // slight delay feels natural
-    }
+  /* ============== INITIAL STATE ================= */
+  function updateButtons() {
+    const downloaded = localStorage.getItem(CHECKLIST_KEY) === "true";
 
-    function enableButtons() {
-      personalBtn.disabled = false;
-      businessBtn.disabled = false;
+    personalBtn.disabled = !downloaded;
+    businessBtn.disabled = !downloaded;
 
-      personalBtn.classList.add("enabled");
-      businessBtn.classList.add("enabled");
-    }
+    personalBtn.classList.toggle("enabled", downloaded);
+    businessBtn.classList.toggle("enabled", downloaded);
+  }
 
-    function goPersonal() {
-      window.location.href = "/upload-personal";
-    }
+  updateButtons();
 
-    function goBusiness() {
-      window.location.href = "/upload-business";
-    }
-  </script>
+  /* ============== DOWNLOAD HANDLER ============== */
+  function markDownloaded() {
+    localStorage.setItem(CHECKLIST_KEY, "true");
+
+    // small UX delay so it feels intentional
+    setTimeout(updateButtons, 300);
+  }
+
+  /* ============== NAVIGATION ==================== */
+  function goPersonal() {
+    if (personalBtn.disabled) return;
+    window.location.href = "/upload-personal";
+  }
+
+  function goBusiness() {
+    if (businessBtn.disabled) return;
+    window.location.href = "/upload-business";
+  }
+</script>
 
 </body>
 </html>
