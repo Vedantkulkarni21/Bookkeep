@@ -128,6 +128,121 @@
       .upload-item { flex-direction:column; align-items:flex-start; gap:10px; }
       .upload-actions { width:100%; justify-content:space-between; }
     }
+
+
+    @media (max-width: 1024px) {
+
+  .container {
+    margin: 110px 24px 40px;
+    padding: 24px;
+  }
+
+  .page-title {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .page-title h2 {
+    font-size: 18px;
+  }
+
+  .upload-item {
+    padding: 14px;
+  }
+
+  .footer-top {
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 768px) {
+
+  .header {
+    padding: 16px 18px;
+  }
+
+  #logo {
+    height: 50px;
+  }
+
+  .container {
+    margin: 120px 14px 30px;
+    padding: 20px;
+  }
+
+  .page-title {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .page-title h2 {
+    font-size: 17px;
+  }
+
+  .upload-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .upload-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .upload-label,
+  .delete-btn {
+    width: 48%;
+    text-align: center;
+  }
+
+  .footer-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+
+  .footer-logo {
+    width: 180px;
+  }
+}
+
+
+@media (max-width: 480px) {
+
+  .container {
+    padding: 16px;
+  }
+
+  .page-title h2 {
+    font-size: 16px;
+  }
+
+  .helper {
+    font-size: 13px;
+  }
+
+  .doc-name {
+    font-size: 14px;
+  }
+
+  .status {
+    font-size: 12px;
+  }
+
+  .upload-label,
+  .delete-btn {
+    padding: 8px;
+    font-size: 13px;
+  }
+
+  .footer-bottom {
+    font-size: 13px;
+  }
+}
+
   </style>
 </head>
 
