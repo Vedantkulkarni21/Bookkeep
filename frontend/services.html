@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Services — BookKeepro</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:"Poppins",sans-serif;}
+
+body{
+  background:#f5f5f5;
+  overflow-x:hidden;
+}
+
+/* ================= NAVBAR (MATCH CONTACT PAGE) ================= */
+
+.navbar{
+  width:100%;
+  position:absolute;
+  top:0;
+  left:0;
+  z-index:20;
+  background:transparent;
+}
+
+.nav-container{
+  width:100%;
+  padding:18px 30px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+
+#logos{
+  height:60px;
+  object-fit:contain;
+}
+
+.nav-menu{
+  display:flex;
+  gap:40px;
+}
+
+.nav-menu a{
+  text-decoration:none;
+  color:#0b2540;
+  font-size:16px;
+  font-weight:500;
+}
+
+.nav-menu a:hover{color:#FF7F11;}
+
+.login-btn{
+  padding:10px 14px;
+  background:#FF7F11;
+  color:#fff;
+  border-radius:25px;
+  border:none;
+  font-weight:600;
+  cursor:pointer;
+}
+
+.login-btn:hover{background:#e56e0d;}
+
+.hamburger{
+  display:none;
+  flex-direction:column;
+  gap:5px;
+  cursor:pointer;
+}
+
+.hamburger span{
+  width:26px;
+  height:3px;
+  background:#0b2540;
+  border-radius:2px;
+}
+
+/* ================= PAGE HEADER ================= */
+
+.page-hero{
+  width:100%;
+  height:550px;
+  background:#0b2540;
+  color:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+}
+
+.page-hero h1{
+  font-size:34px;
+  font-weight:700;
+}
+
+/* ================= SERVICE BLOCKS ================= */
+
+.services-wrapper{
+  width:90%;
+  max-width:1200px;
+  margin:70px auto;
+  display:flex;
+  flex-direction:column;
+  gap:50px;
+}
+
+.service-block{
+  display:flex;
+  align-items:center;
+  gap:40px;
+  background:white;
+  padding:35px;
+  border-radius:15px;
+  box-shadow:0 4px 12px rgba(0,0,0,.12);
+}
+
+.service-block.reverse{
+  flex-direction:row-reverse;
+}
+
+.service-text h2{
+  font-size:22px;
+  font-weight:700;
+  margin-bottom:12px;
+  color:#0b2540;
+}
+
+.service-text p{
+  line-height:1.8;
+  font-size:15px;
+
+  color:#333;
+}
+
+.page-hero{
+  background:linear-gradient(rgba(0,0,0,.55), rgba(0,0,0,.55)),
+  url("./images/business-meeting-long-table-with-chart.jpg");
+  background-size:cover;
+  background-position:center;
+}
+
+
+.list-items li{
+  margin-left:40px;
+  color: #333;
+}
+
+.service-img{
+  width:380px;
+  height:260px;
+  border-radius:14px;
+  object-fit:cover;
+}
+
+
+/* ================= FOOTER (MATCH CONTACT PAGE) ================= */
+
+.footer{
+  background:#BEE2FA;
+  margin-top:60px;
+  border-top:4px solid #0077C8;
+}
+
+.footer-top{
+  width:90%;
+  max-width:1200px;
+  margin:auto;
+  display:flex;
+  gap:40px;
+  padding:40px 0;
+  flex-wrap:wrap;
+}
+
+.footer-logo{width:220px;}
+
+.footer-bottom{
+  text-align:center;
+  padding:15px 0;
+  background:#A9D9F8;
+}
+
+.footer-social img{
+  width:30px;
+  margin-right:15px;
+  cursor:pointer;
+}
+
+
+@media(max-width:900px){
+
+  .nav-container{padding:14px 16px;}
+  #logos{height:48px;}
+
+  .hamburger{
+    display:flex;
+    margin-left:auto;
+  }
+
+  .nav-menu{
+    position:absolute;
+    top:78px;
+    left:0;
+    right:0;
+    width:100%;
+    background:#0b2540;
+    padding:20px 0;
+    display:none;
+    flex-direction:column;
+    align-items:center;
+    gap:18px;
+  }
+
+  .nav-menu a{color:white;}
+
+  .nav-menu.active{display:flex;}
+
+  .login-btn{display:none;}
+
+  .nav-menu::after{
+    content:"Login / Sign-Up";
+    margin-top:10px;
+    padding:10px 18px;
+    border-radius:20px;
+    background:#FF7F11;
+    color:white;
+    font-weight:600;
+  }
+
+  .service-block,
+  .service-block.reverse{
+    flex-direction:column;
+  }
+
+  .service-img{
+    width:100%;
+    height:240px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+
+<div class="navbar">
+  <div class="nav-container">
+
+    <img id="logos" src="/images/bookkeeppro-logo.webp" alt="Bookkeepro Logo">
+
+    <nav id="navMenu" class="nav-menu">
+      <a href="/home">Home</a>
+      <a href="/about-us">About Us</a>
+      <a href="/services">Services</a>
+      <a href="/contact">Contact Us</a>
+    </nav>
+
+    <button class="login-btn" onclick="window.location.href='/login'">
+      Login / Sign-Up
+    </button>
+
+    <div class="hamburger" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </div>
+
+  </div>
+</div>
+
+
+<div class="page-hero">
+  <h1>Professional Services for Firms & Businesses</h1>
+</div>
+
+
+<div class="services-wrapper">
+
+  <div class="service-block">
+    <div class="service-text">
+
+      <h2>For Accounting Firms and Businesses</h2>
+
+      <p>
+        Bookkeepro India specialises in its offshore delivery model and consists of a strong team of qualified
+        accountants, cost accountants, tax consultants and payroll experts to ease the bookkeeping for Accounting
+        Firms and Businesses, globally.
+      </p>
+
+      <br>
+
+      <p>
+        Bookkeepro’s India based offshore bookkeeping services offer several benefits
+        to global accounting firms and businesses.
+      </p>
+    </div>
+
+    <img class="service-img"
+         src="./images/business-meeting-long-table-with-chart.jpg"
+         alt="Accounting Outsourcing">
+
+  </div>
+
+  <div class="service-block reverse">
+    <div class="service-text">
+
+      <h2>Scale Your Business with Accounting Outsourcing</h2>
+
+      <p>
+        Are you ready to supercharge your business and take it to new heights?
+        We understand that managing finances and accounting can be a complex and
+        time-consuming task, often diverting your focus away from what truly matters —
+        growing your business.
+      </p>
+
+      <br>
+
+      <p>
+        That’s where we come in. Allow us to present the game-changing solution:
+        Accounting Outsourcing.
+      </p>
+    </div>
+
+    <img class="service-img"
+         src="./images/young-business-people-using-computer-in-office.webp"
+         alt="Outsourced Accounting Team">
+
+  </div>
+
+
+  <div class="service-block reverse">
+    <div class="service-text">
+
+      <h2>Tax Planning And Preparation</h2>
+
+      <p>
+        We help individuals and businesses optimize tax strategy and get returns prepared right and on time. Our proactive approach to tax strategy helps you go beyond traditional planning to save your taxes.
+        Whether your business is an LLC, S-Corp, or C-Corp, we’ll help you:
+        <ol class="list-items">
+          <li>Both comply with and leverage changing federal tax law</li>
+          <li>Minimize your overall tax liability through strategic planning</li>
+          <li>Determine appropriate taxation of employee benefits provided to business owners</li>
+          <li>Take advantage of year-end tax management opportunities</li>
+          <li>Manage income, sales, and use tax liabilities across multiple jurisdictions based on your business’s nexus </li>
+          <li>Manage cash availability to cover tax liabilities </li>
+        </ol>
+      </p>
+
+      <br>
+
+      <p>
+        That’s where we come in. Allow us to present the game-changing solution:
+        Accounting Outsourcing.
+      </p>
+    </div>
+
+    <img class="service-img"
+         src="./images/young-business-people-using-computer-in-office.webp"
+         alt="Outsourced Accounting Team">
+
+  </div>
+
+</div>
+
+
+<footer class="footer">
+
+  <div class="footer-top">
+
+    <div class="footer-left">
+      <img src="/images/bookkeeppro-logo.webp" class="footer-logo" alt="Bookkeepro">
+      <p>Your Globally Trusted Bookkeeping Partner.</p>
+
+      <div class="footer-social">
+        <img src="/images/facebook.webp">
+        <img src="/images/linkedin.webp">
+        <img src="/images/instagram.webp">
+      </div>
+    </div>
+
+    <div class="footer-links">
+      <h4>Quick Links</h4>
+      <a href="/home">Home</a>
+      <a href="/about-us">About Us</a>
+      <a href="/services">Services</a>
+      <a href="/contact">Contact Us</a>
+    </div>
+
+    <div class="footer-contact">
+      <h4>Contact</h4>
+      <p>📍 USA: McKinney, TX</p>
+      <p>📍 India: Pune, Maharashtra</p>
+      <p>📧 info@bookkeeppro.net</p>
+      <p>📞 +1469-796-6151 / +91 738 793 6020</p>
+    </div>
+
+  </div>
+
+  <div class="footer-bottom">
+    <p>© 2024 Bookkeepro Business Solutions. All rights reserved.</p>
+  </div>
+
+</footer>
+
+<script>
+function toggleMenu(){
+  document.getElementById("navMenu").classList.toggle("active");
+}
+</script>
+
+</body>
+</html>

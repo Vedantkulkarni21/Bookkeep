@@ -40,13 +40,27 @@ body {
 .header {
   background: #BEE2FA;
   padding: clamp(14px, 3vw, 22px);
-  display: flex;
-  align-items: center;
 }
 
 .header img {
-  width: clamp(160px, 30vw, 220px);
+  width: clamp(160px, 40vw, 240px);
   cursor: pointer;
+}
+
+/* LOGOUT BUTTON */
+.logout-btn {
+  padding: 10px 16px;
+  background: #FF7F11;
+  color: #fff;
+  border-radius: 25px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  float: right;
+}
+
+.logout-btn:hover {
+  background: #e56e0d;
 }
 
 /* MAIN CONTAINER */
@@ -206,10 +220,19 @@ body {
 <body>
 
 <!-- HEADER -->
-<div class="header">
-  <img src="/images/bookkeeppro-logo.png" alt="logo"
-       onclick="location.href='/home'">
-</div>
+  <div class="header">
+
+    <img
+      src="/images/bookkeeppro-logo.webp"
+      onclick="window.location.href='/home'"
+      alt="BookKeepPro"
+    />
+
+    <button class="logout-btn" onclick="logoutUser()">
+      Logout
+    </button>
+
+  </div>
 
 <!-- MAIN -->
 <div class="main">
@@ -225,11 +248,20 @@ body {
 
 <!-- FOOTER -->
 <div class="footer">
-  <img src="/images/bookkeeppro-logo.png" alt="logo">
+  <img src="/images/bookkeeppro-logo.webp" alt="logo">
   <small>© 2024 BookKeepro Business Solutions. All rights reserved.</small>
 </div>
 
 <script src="/js/admin.js"></script>
+<script>
+  function logoutUser() {
+  localStorage.removeItem("token");
+  localStorage.removeItem("role");
+  localStorage.removeItem("checklistDownloaded");
 
+  window.location.href = "/login";
+}
+
+</script>
 </body>
 </html>

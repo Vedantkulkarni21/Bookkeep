@@ -6,7 +6,7 @@ db = SessionLocal()
 admin_user = create_user(
     db,
     name="Admin1",
-    email="admin1@gmail.com",
+    email="admins@gmail.com",
     phone="99299922",
     password="pass",
     role="admin"

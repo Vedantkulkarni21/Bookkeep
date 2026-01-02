@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>About Us — BookKeepro</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:"Poppins",sans-serif;}
+
+body{
+  background:#f5f5f5;
+  overflow-x:hidden;
+}
+
+/* ================= NAVBAR (same as contact page) ================= */
+
+.navbar{
+  width:100%;
+  top:0;
+  z-index:20;
+  background:#A9D9F8;
+}
+
+.nav-container{
+  width:100%;
+  padding:18px 30px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+
+#logos{
+  height:60px;
+  object-fit:contain;
+}
+
+.nav-menu{
+  display:flex;
+  gap:40px;
+}
+
+.nav-menu a{
+  text-decoration:none;
+  color:#0b2540;
+  font-size:16px;
+  font-weight:500;
+}
+
+.nav-menu a:hover{color:#FF7F11;}
+
+.login-btn{
+  padding:10px 14px;
+  background:#FF7F11;
+  color:#fff;
+  border-radius:25px;
+  border:none;
+  font-weight:600;
+  cursor:pointer;
+}
+
+.login-btn:hover{background:#e56e0d;}
+
+.hamburger{
+  display:none;
+  flex-direction:column;
+  gap:5px;
+  cursor:pointer;
+}
+
+.hamburger span{
+  width:26px;
+  height:3px;
+  background:#0b2540;
+  border-radius:2px;
+}
+
+/* ================= HERO HEADER ================= */
+
+.page-hero{
+  width:100%;
+  height:280px;
+  background:#0b2540;
+  color:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  margin-top: 50px;
+}
+
+.page-hero h1{
+  font-size:34px;
+  font-weight:700;
+}
+
+.page-hero p{
+  opacity:.85;
+  margin-top:6px;
+}
+
+/* ================= ABOUT SECTION ================= */
+
+.about-wrapper{
+  width:90%;
+  max-width:1200px;
+  margin:70px auto;
+  display:flex;
+  flex-direction:column;
+  gap:45px;
+}
+
+/* content blocks */
+
+.about-block{
+  display:flex;
+  gap:35px;
+  background:#fff;
+  padding:35px;
+  border-radius:15px;
+  box-shadow:0 4px 10px rgba(0,0,0,.12);
+  align-items:center;
+}
+
+.about-block.reverse{
+  flex-direction:row-reverse;
+}
+
+.about-text h2{
+  font-size:22px;
+  font-weight:700;
+  margin-bottom:12px;
+  color:#0b2540;
+}
+
+.about-text p{
+  line-height:1.8;
+  font-size:15px;
+  color:#333;
+}
+
+.about-note{
+  margin-top:15px;
+  font-style:italic;
+  color:#FF7F11;
+}
+
+/* image */
+
+.about-img{
+  width:380px;
+  height:260px;
+  border-radius:14px;
+  object-fit:cover;
+}
+
+/* ================= FOOTER (same as contact page) ================= */
+
+.footer{
+  background:#BEE2FA;
+  margin-top:60px;
+  border-top:4px solid #0077C8;
+}
+
+.footer-top{
+  width:90%;
+  max-width:1200px;
+  margin:auto;
+  display:flex;
+  gap:40px;
+  padding:40px 0;
+  flex-wrap:wrap;
+}
+
+.footer-logo{width:220px;}
+
+.footer-bottom{
+  text-align:center;
+  padding:15px 0;
+  background:#A9D9F8;
+}
+
+.footer-social img{
+  width:30px;
+  margin-right:15px;
+  cursor:pointer;
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media(max-width:900px){
+
+  .nav-container{padding:14px 16px;}
+  #logos{height:48px;}
+
+  .hamburger{
+    display:flex;
+    margin-left:auto;
+  }
+
+  .nav-menu{
+    position:absolute;
+    top:78px;
+    left:0;
+    right:0;
+    width:100%;
+    background:#0b2540;
+    padding:20px 0;
+    display:none;
+    flex-direction:column;
+    align-items:center;
+    gap:18px;
+  }
+
+  .nav-menu a{color:white;}
+
+  .nav-menu.active{display:flex;}
+
+  .login-btn{display:none;}
+
+  .nav-menu::after{
+    content:"Login / Sign-Up";
+    margin-top:10px;
+    padding:10px 18px;
+    border-radius:20px;
+    background:#FF7F11;
+    color:white;
+    font-weight:600;
+  }
+
+  .about-block,
+  .about-block.reverse{
+    flex-direction:column;
+  }
+
+  .about-img{
+    width:100%;
+    height:240px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<!-- ================= NAVBAR ================= -->
+
+<div class="navbar">
+  <div class="nav-container">
+
+    <img id="logos" src="./images/bookkeeppro-logo.webp" alt="Bookkeepro Logo">
+
+    <nav id="navMenu" class="nav-menu">
+      <a href="/home">Home</a>
+      <a href="/about-us">About Us</a>
+      <a href="/services">Services</a>
+      <a href="/contact">Contact Us</a>
+    </nav>
+
+    <button class="login-btn" onclick="window.location.href='/login'">
+      Login / Sign-Up
+    </button>
+
+    <div class="hamburger" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </div>
+
+  </div>
+</div>
+
+<!-- ================= HERO ================= -->
+
+<div class="page-hero">
+  <div>
+    <h1>About Us</h1>
+    <p>Our People Are Passionate About What We Do</p>
+  </div>
+</div>
+
+<!-- ================= ABOUT CONTENT ================= -->
+
+<div class="about-wrapper">
+
+  <!-- Block 1 -->
+  <div class="about-block">
+
+    <div class="about-text">
+
+      <h2>Who We Are</h2>
+
+      <p>
+        Started as a Chartered Accountant firm in India in 1998.
+        Expanded presence in Pune and Mumbai in India in 2018.
+      </p>
+
+      <br>
+
+      <p>
+        Launched Bookkeepro Business Solutions Private Limited Company &
+        Bookkeepro Business Solutions LLC in India and US in 2023
+        to cater to increasing international client base!
+      </p>
+
+    </div>
+
+    <img class="about-img"
+         src="./images/Gemini_Generated_Image_5pqvpl5pqvpl5pqv.webp"
+         alt="Bookkeepro Team">
+
+  </div>
+
+  <!-- Block 2 -->
+  <div class="about-block reverse">
+
+    <div class="about-text">
+
+      <h2>About Bookkeepro</h2>
+
+      <p>Started as a Chartered Accountant firm in India in 1998.</p>
+      <br>
+      <p>Expanded presence in Pune and Mumbai in India in 2018.</p>
+      <br>
+      <p>
+        Launched Bookkeepro Business Solutions Private Limited Company &
+        Bookkeepro Business Solutions LLC in India and US in 2023
+        to cater to increasing international client base!
+      </p>
+
+      <p class="about-note">
+        — Our People Are Passionate About What We Do
+      </p>
+
+    </div>
+
+    <img class="about-img"
+         src="./images/Gemini_Generated_Image_5pqvpl5pqvpl5pqv.webp"
+         alt="About Bookkeepro">
+
+  </div>
+
+</div>
+
+<!-- ================= FOOTER ================= -->
+
+<footer class="footer">
+
+  <div class="footer-top">
+
+    <div class="footer-left">
+      <img src="./images/bookkeeppro-logo.webp" class="footer-logo" alt="Bookkeepro">
+      <p>Your Globally Trusted Bookkeeping Partner.</p>
+
+      <div class="footer-social">
+        <img src="./images/facebook.webp">
+        <img src="./images/linkedin.webp">
+        <img src="./images/instagram.webp">
+      </div>
+    </div>
+
+    <div class="footer-links">
+      <h4>Quick Links</h4>
+      <a href="/home">Home</a>
+      <a href="/about-us">About Us</a>
+      <a href="/services">Services</a>
+      <a href="/contact">Contact Us</a>
+    </div>
+
+    <div class="footer-contact">
+      <h4>Contact</h4>
+      <p>📍 USA: McKinney, TX</p>
+      <p>📍 India: Pune, Maharashtra</p>
+      <p>📧 info@bookkeeppro.net</p>
+      <p>📞 +1469-796-6151 / +91 738 793 6020</p>
+    </div>
+
+  </div>
+
+  <div class="footer-bottom">
+    <p>© 2024 Bookkeepro Business Solutions. All rights reserved.</p>
+  </div>
+
+</footer>
+
+<script>
+function toggleMenu(){
+  document.getElementById("navMenu").classList.toggle("active");
+}
+</script>
+
+</body>
+</html>

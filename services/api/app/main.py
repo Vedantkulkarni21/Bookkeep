@@ -101,6 +101,17 @@ def upload_personal():
 def upload_business():
     return serve_frontend_file("upload-business.html")
 
+@app.get("/contact", tags=["frontend"])
+def contact_page():
+    return serve_frontend_file("contact.html")
+
+@app.get("/services", tags=["frontend"])
+def services_page():
+    return serve_frontend_file("services.html")
+
+@app.get("/about-us", tags=["frontend"])
+def about_us_page():
+    return serve_frontend_file("about-us.html")
 
 @app.post("/logout")
 def logout():

@@ -15,14 +15,43 @@
       background:#BEE2FA; padding:18px 30px;
       display:flex; align-items:center;
     }
-    #logos { height:60px; cursor:pointer; }
+/* #logos {
+  height: 60px;
+  object-fit: contain;
+  cursor: pointer;
+} */
 
+.header {
+  background: #BEE2FA;
+  padding: clamp(14px, 3vw, 22px);
+}
+
+.header img {
+  width: clamp(160px, 40vw, 240px);
+  cursor: pointer;
+}
     .container {
       max-width:1000px; margin:90px auto 60px;
       background:#fff; padding:28px;
       border-radius:12px;
       box-shadow:0 6px 20px rgba(0,0,0,0.06);
     }
+
+    /* LOGOUT BUTTON */
+.logout-btn {
+  margin-left: auto;
+  padding: 10px 16px;
+  background: #FF7F11;
+  color: #fff;
+  border-radius: 25px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.logout-btn:hover {
+  background: #e56e0d;
+}
 
     .page-title {
       display:flex; justify-content:space-between;
@@ -208,8 +237,17 @@
 
   <!-- HEADER -->
   <div class="header">
-    <img id="logos" src="/images/bookkeeppro-logo.png"
-         onclick="window.location.href='/home'" />
+
+    <img
+      src="/images/bookkeeppro-logo.webp"
+      onclick="window.location.href='/home'"
+      alt="BookKeepPro"
+    />
+
+    <button class="logout-btn" onclick="logoutUser()">
+      Logout
+    </button>
+
   </div>
 
   <!-- MAIN -->
@@ -229,14 +267,14 @@
 
     <!-- REMAINING DOCUMENTS -->
     <div style="margin-top:30px;">
-      <h3 style="color:#0b2540;">Upload Remaining Documents</h3>
+      <!-- <h3 style="color:#0b2540;">Other Documents</h3> -->
       <p class="small-muted" style="margin-bottom:12px;">
         Upload any additional documents here. All file formats are allowed.
       </p>
 
       <div class="upload-item">
         <div class="upload-left">
-          <div class="doc-name">Additional Documents</div>
+          <div class="doc-name">Other Documents</div>
           <div id="extraStatus" class="status small-muted"></div>
         </div>
         <div class="upload-actions">
@@ -258,7 +296,7 @@
   <footer class="footer">
     <div class="footer-top">
       <div>
-        <img src="/images/bookkeeppro-logo.png" class="footer-logo" />
+        <img src="/images/bookkeeppro-logo.webp" class="footer-logo" />
         <p>Your Globally Trusted Bookkeeping Partner.</p>
       </div>
       <div>
@@ -268,8 +306,8 @@
       </div>
       <div>
         <h4 style="color:#0077c8">Contact</h4>
-        <p>sales@bookkeepbs.com</p>
-        <p>+1 (945) 237 0357</p>
+        <p>info@bookkeeppro.net </p>
+        <p>+1469-796-6151 </p>
       </div>
     </div>
     <div class="footer-bottom">
@@ -377,6 +415,17 @@
     });
 
     renderDocs();
+  </script>
+
+  <script>
+    function logoutUser() {
+  localStorage.removeItem("token");
+  localStorage.removeItem("role");
+  localStorage.removeItem("checklistDownloaded");
+
+  window.location.href = "/login";
+}
+
   </script>
 
 </body>

@@ -25,6 +25,7 @@ body {
   flex-direction: column;
 }
 
+
 /* HEADER */
 .header {
   background: #BEE2FA;
@@ -32,7 +33,24 @@ body {
 }
 
 .header img {
-  width: clamp(160px, 40vw, 220px);
+  width: clamp(160px, 40vw, 240px);
+  cursor: pointer;
+}
+
+/* LOGOUT BUTTON */
+.logout-btn {
+  padding: 10px 16px;
+  background: #FF7F11;
+  color: #fff;
+  border-radius: 25px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  float: right;
+}
+
+.logout-btn:hover {
+  background: #e56e0d;
 }
 
 /* MAIN */
@@ -207,9 +225,20 @@ body {
 
 <body>
 
-  <div class="header">
-    <img src="/images/bookkeeppro-logo.png" alt="BookKeepPro">
+    <div class="header">
+
+    <img
+      src="/images/bookkeeppro-logo.webp"
+      onclick="window.location.href='/home'"
+      alt="BookKeepPro"
+    />
+
+    <button class="logout-btn" onclick="logoutUser()">
+      Logout
+    </button>
+
   </div>
+
 
   <div class="main">
 
@@ -265,7 +294,7 @@ body {
   </div>
 
   <div class="footer">
-    <img src="/images/bookkeeppro-logo.png">
+    <img src="/images/bookkeeppro-logo.webp">
     <small>© 2024 Bookkeepro Business Solutions</small>
   </div>
 
@@ -379,7 +408,17 @@ function approveForFiling() {
 function goBack() {
   window.location.href = "/admin-dashboard";
 }
+
+function logoutUser() {
+  localStorage.removeItem("token");
+  localStorage.removeItem("role");
+  localStorage.removeItem("checklistDownloaded");
+
+  window.location.href = "/login";
+}
+
 </script>
+
 
 </body>
 </html>

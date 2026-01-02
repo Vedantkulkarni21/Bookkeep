@@ -40,6 +40,22 @@ body {
   cursor: pointer;
 }
 
+/* LOGOUT BUTTON */
+.logout-btn {
+  padding: 10px 16px;
+  background: #FF7F11;
+  color: #fff;
+  border-radius: 25px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  float: right;
+}
+
+.logout-btn:hover {
+  background: #e56e0d;
+}
+
 /* MAIN CONTAINER */
 .container {
   width: min(100%, 900px);
@@ -154,12 +170,19 @@ h2 {
 
   <!-- Header -->
   <div class="header">
+
     <img
-      src="/images/bookkeeppro-logo.png"
+      src="/images/bookkeeppro-logo.webp"
       onclick="window.location.href='/home'"
       alt="BookKeepPro"
     />
+
+    <button class="logout-btn" onclick="logoutUser()">
+      Logout
+    </button>
+
   </div>
+
 
   <!-- Main -->
   <div class="container">
@@ -259,6 +282,15 @@ h2 {
     if (businessBtn.disabled) return;
     window.location.href = "/upload-business";
   }
+
+  function logoutUser() {
+  localStorage.removeItem("token");
+  localStorage.removeItem("role");
+  localStorage.removeItem("checklistDownloaded");
+
+  window.location.href = "/login";
+}
+
 </script>
 
 </body>
