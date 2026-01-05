@@ -307,11 +307,6 @@ body{
   </div>
 </div>
 
-<!-- PAGE HEADER / TITLE -->
-<!-- <div class="page-hero">
-  <h1>Contact BookKeepro</h1>
-</div> -->
-
 <!-- ================= CONTACT SECTION ================= -->
 
 <section class="contact-section">
@@ -339,7 +334,7 @@ body{
     </div>
 
     <div>
-      <form class="contact-form">
+      <!-- <form class="contact-form">
 
         <div class="form-row">
           <input type="text" placeholder="First Name">
@@ -359,7 +354,27 @@ body{
           <span>info@bookkeeppro.net</span>
         </div>
 
+      </form> -->
+    <form class="contact-form" id="contactForm">
+
+        <div class="form-row">
+          <input type="text" name="first_name" placeholder="First Name" required>
+          <input type="text" name="last_name" placeholder="Last Name" required>
+        </div>
+
+        <input type="email" name="email" placeholder="Email Address" required>
+
+        <div class="phone-row">
+          <input type="text" name="phone" placeholder="Mobile Number" required>
+        </div>
+
+        <button type="submit">SUBMIT</button>
+
+        <div id="contactStatus" style="margin-top:10px;font-weight:600;"></div>
+
       </form>
+
+    
     </div>
 
   </div>
@@ -410,6 +425,43 @@ body{
 function toggleMenu(){
   document.getElementById("navMenu").classList.toggle("active");
 }
+</script>
+
+<script>
+  // mail feature
+const form = document.getElementById("contactForm");
+const statusBox = document.getElementById("contactStatus");
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const data = {
+    first_name: form.first_name.value,
+    last_name: form.last_name.value,
+    email: form.email.value,
+    phone: form.phone.value,
+  };
+
+  statusBox.innerText = "Sending...";
+
+  try {
+    const res = await fetch("/api/contact", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+
+    if (!res.ok) throw new Error();
+
+    statusBox.style.color = "green";
+    statusBox.innerText = "Message sent successfully!";
+    form.reset();
+
+  } catch {
+    statusBox.style.color = "red";
+    statusBox.innerText = "Failed to send message. Please try again.";
+  }
+});
 </script>
 
 </body>

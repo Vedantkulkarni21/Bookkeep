@@ -7,6 +7,7 @@ from fastapi.responses import FileResponse
 from app import models
 from app.db import engine
 
+
 log = logging.getLogger("uvicorn.error")
 
 # create app early so mounts can reference it
@@ -117,3 +118,25 @@ def about_us_page():
 def logout():
     # JWT is stateless → nothing to invalidate server-side
     return {"message": "Logged out"}
+
+
+
+
+
+from app.routers import contact
+app.include_router(contact.router)
+
+from app.routers import review
+app.include_router(review.router)
+
+
+from app.utils.emailer import send_email
+
+@app.get("/test-email", tags=["email"])
+async def test_email():
+    await send_email(
+        to="info@bookkeepro.net",
+        subject="BookKeepro SMTP Test",
+        body="<p>Email sending is working ✔️</p>"
+    )
+    return {"status": "sent"}

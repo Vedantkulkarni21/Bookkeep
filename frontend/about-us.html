@@ -15,13 +15,15 @@ body{
   overflow-x:hidden;
 }
 
-/* ================= NAVBAR (same as contact page) ================= */
+/* ================= NAVBAR (same as services page) ================= */
 
 .navbar{
   width:100%;
+  position:absolute;
   top:0;
+  left:0;
   z-index:20;
-  background:#A9D9F8;
+  background:transparent;
 }
 
 .nav-container{
@@ -44,7 +46,7 @@ body{
 
 .nav-menu a{
   text-decoration:none;
-  color:#0b2540;
+  color:#ffffff;
   font-size:16px;
   font-weight:500;
 }
@@ -77,18 +79,22 @@ body{
   border-radius:2px;
 }
 
-/* ================= HERO HEADER ================= */
+/* ================= HERO IMAGE (same style as services page) ================= */
 
 .page-hero{
   width:100%;
-  height:280px;
-  background:#0b2540;
+  height:550px;
   color:white;
   display:flex;
   align-items:center;
   justify-content:center;
   text-align:center;
-  margin-top: 50px;
+
+  background:linear-gradient(rgba(91, 88, 88, 0.55), rgba(0, 0, 0, 0.55)),
+  url("./images/About-us-background-image.webp");
+
+  background-size:cover;
+  background-position:center;
 }
 
 .page-hero h1{
@@ -97,11 +103,11 @@ body{
 }
 
 .page-hero p{
-  opacity:.85;
-  margin-top:6px;
+  margin-top:8px;
+  opacity:.9;
 }
 
-/* ================= ABOUT SECTION ================= */
+/* ================= ABOUT CONTENT ================= */
 
 .about-wrapper{
   width:90%;
@@ -112,15 +118,13 @@ body{
   gap:45px;
 }
 
-/* content blocks */
-
 .about-block{
   display:flex;
   gap:35px;
   background:#fff;
   padding:35px;
   border-radius:15px;
-  box-shadow:0 4px 10px rgba(0,0,0,.12);
+  box-shadow:0 4px 12px rgba(0,0,0,.12);
   align-items:center;
 }
 
@@ -142,12 +146,10 @@ body{
 }
 
 .about-note{
-  margin-top:15px;
+  margin-top:12px;
   font-style:italic;
   color:#FF7F11;
 }
-
-/* image */
 
 .about-img{
   width:380px;
@@ -156,7 +158,7 @@ body{
   object-fit:cover;
 }
 
-/* ================= FOOTER (same as contact page) ================= */
+/* ================= FOOTER (same as services page) ================= */
 
 .footer{
   background:#BEE2FA;
@@ -250,7 +252,7 @@ body{
 <div class="navbar">
   <div class="nav-container">
 
-    <img id="logos" src="./images/bookkeeppro-logo.webp" alt="Bookkeepro Logo">
+    <img id="logos" src="/images/bookkeeppro-logo.webp" alt="Bookkeepro Logo">
 
     <nav id="navMenu" class="nav-menu">
       <a href="/home">Home</a>
@@ -300,7 +302,7 @@ body{
       <p>
         Launched Bookkeepro Business Solutions Private Limited Company &
         Bookkeepro Business Solutions LLC in India and US in 2023
-        to cater to increasing international client base!
+        to cater to an increasing international client base.
       </p>
 
     </div>
@@ -318,18 +320,20 @@ body{
 
       <h2>About Bookkeepro</h2>
 
-      <p>Started as a Chartered Accountant firm in India in 1998.</p>
-      <br>
-      <p>Expanded presence in Pune and Mumbai in India in 2018.</p>
-      <br>
       <p>
-        Launched Bookkeepro Business Solutions Private Limited Company &
-        Bookkeepro Business Solutions LLC in India and US in 2023
-        to cater to increasing international client base!
+        We bring decades of expertise in accounting, finance,
+        tax planning and business transformation.
+      </p>
+
+      <br>
+
+      <p>
+        Our offshore delivery model enables firms and businesses globally
+        to scale efficiently while maintaining financial accuracy and compliance.
       </p>
 
       <p class="about-note">
-        — Our People Are Passionate About What We Do
+        — Your Globally Trusted Bookkeeping Partner
       </p>
 
     </div>
@@ -349,13 +353,13 @@ body{
   <div class="footer-top">
 
     <div class="footer-left">
-      <img src="./images/bookkeeppro-logo.webp" class="footer-logo" alt="Bookkeepro">
+      <img src="/images/bookkeeppro-logo.webp" class="footer-logo" alt="Bookkeepro">
       <p>Your Globally Trusted Bookkeeping Partner.</p>
 
       <div class="footer-social">
-        <img src="./images/facebook.webp">
-        <img src="./images/linkedin.webp">
-        <img src="./images/instagram.webp">
+        <img src="/images/facebook.webp">
+        <img src="/images/linkedin.webp">
+        <img src="/images/instagram.webp">
       </div>
     </div>
 
