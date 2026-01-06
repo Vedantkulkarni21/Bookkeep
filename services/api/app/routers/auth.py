@@ -53,24 +53,12 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     return user
 
 
-# ...existing code...
-
-# Backwards-compatibility alias expected by upload.py
-# ...existing code...
-# Re-export the real auth router and helper from app.auth.security
 from app.auth.security import router as router, get_current_user as get_current_user
 
-# Backwards-compat alias expected by other modules
 get_current_user_real = get_current_user
-# ...existing code...
 
-# Ensure this module exposes a `router` attribute expected by main.py.
-# Prefer the router defined in app.auth.security (legacy location); if that import fails
-# expose a minimal APIRouter so app.include_router(auth.router) won't raise AttributeError.
 try:
-    from app.auth.security import router as router  # type: ignore
+    from app.auth.security import router as router  
 except Exception:
     from fastapi import APIRouter
     router = APIRouter(prefix="/api/auth", tags=["auth"])
-
-# ...existing code...

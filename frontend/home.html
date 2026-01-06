@@ -1,553 +1,3 @@
-<!-- <!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BookKeepro Landing Page</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-<style>
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: "Poppins", sans-serif;
-}
-
-body {
-    background: #f5f5f5;
-}
-
-
-.header {
-    width: 100%;
-    padding: 20px 30px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: absolute;
-    top: 0;
-    z-index: 10;
-}
-
-#logos {
-    height: 60px;
-    object-fit: contain;
-}
-
-.nav-links {
-    display: flex;
-    gap: 40px;
-    margin-left: 340px;
-}
-
-.nav-links a {
-    text-decoration: none;
-    color: white;
-    font-size: 16px;
-    font-weight: 500;
-}
-
-.nav-links a:hover {
-    color: #FFD28C;
-}
-
-.login-btn {
-    padding: 10px 10px;
-    background: #FF7F11;
-    color: white;
-    border-radius: 25px;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-}
-
-.login-btn:hover {
-    background: #e56e0d;
-}
-
-.menu-toggle {
-    display: none;
-    flex-direction: column;
-    cursor: pointer;
-}
-
-.menu-toggle span {
-    width: 26px;
-    height: 3px;
-    background: white;
-    margin: 4px 0;
-    border-radius: 2px;
-}
-
-
-.hero {
-    width: 100%;
-    height: 520px;
-    background-image: url('/images/Background-image.webp');
-    background-size: cover;
-    background-position: center;
-    background-color: rgba(0,0,0,0.4);
-    background-blend-mode: darken;
-}
-
-
-.bottom-block {
-    width: 45%;
-    margin: -90px auto 60px;
-    background: white;
-    padding: 25px 30px;
-    border-radius: 8px;
-    display: flex;
-    gap: 25px;
-    align-items: center;
-    box-shadow: 0px 3px 12px rgba(0,0,0,0.15);
-    position: relative;
-}
-
-.block-img {
-    width: 120px;
-    height: 120px;
-    background-image: url('/images/small.webp');
-    background-size: cover;
-    background-position: center;
-    border-radius: 12px;
-}
-
-.block-text h1 {
-    font-size: 25px;
-    font-weight: 700;
-}
-
-.block-text p {
-    color: #555;
-}
-
-
-.about-section {
-    width: 90%;
-    max-width: 1200px;
-    margin: 60px auto;
-    display: flex;
-    gap: 40px;
-}
-
-.about-section h2 {
-    font-size: 30px;
-    font-weight: 700;
-}
-
-.about-section .text p {
-    line-height: 1.8;
-    font-size: 15px;
-    color: #333;
-}
-
-.about-section .note {
-    margin-top: 15px;
-    font-style: italic;
-    color: #FF7F11;
-}
-
-.about-section img {
-    width: 100%;
-    height: 300px;
-    object-fit: cover;
-    border-radius: 8px;
-}
-
-.services-section {
-    width: 90%;
-    max-width: 1200px;
-    margin: 50px auto;
-}
-
-.services-section h2 {
-    font-size: 28px;
-    font-weight: 700;
-    margin-bottom: 25px;
-}
-
-.services-grid {
-    display: flex;
-    gap: 25px;
-    flex-wrap: wrap;
-    justify-content: space-between;
-}
-
-.service-card {
-    flex: 1;
-    min-width: 260px;
-    background: #3AB4F2;
-    padding: 25px;
-    border-radius: 20px;
-    text-align: center;
-    color: white;
-    box-shadow: 0px 4px 12px rgba(0,0,0,0.15);
-    transition: 0.3s;
-}
-
-.service-card:hover {
-    transform: translateY(-5px);
-}
-
-.service-card img {
-    width: 110px;
-    height: 110px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-.service-card h3 {
-    margin-top: 15px;
-    font-size: 16px;
-    font-weight: 600;
-}
-
-.service-card button {
-    margin-top: 15px;
-    padding: 10px 18px;
-    background: #FF7F11;
-    border: none;
-    border-radius: 20px;
-    color: white;
-    cursor: pointer;
-}
-
-
-.contact-section {
-    width: 90%;
-    max-width: 1200px;
-    margin: 70px auto;
-    border: solid 2px rgb(131, 124, 124);
-    border-radius: 15px;
-}
-
-.contact-title {
-    font-size: 28px;
-    font-weight: 700;
-    margin-bottom: 30px;
-    text-align: center;
-}
-
-.contact-container {
-    display: flex;
-    padding: 20px;
-    width: 70%;
-    gap: 35px;
-    margin: auto;
-}
-
-/* LEFT */
-
-.contact-info {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 25px;
-}
-
-.info-box {
-    padding: 20px;
-    border-radius: 15px;
-    color: white;
-}
-
-.usa { background: #3AB4F2; }
-.ind { background: #FF7F11; }
-
-/* RIGHT */
-
-.contact-form {
-    flex: 1.3;
-    background: white;
-    padding: 50px;
-    border-radius: 15px;
-    box-shadow: 0px 3px 10px rgba(0,0,0,0.15);
-}
-
-.form-row {
-    display: flex;
-    gap: 15px;
-}
-
-.contact-form input {
-    width: 100%;
-    padding: 12px 15px;
-    border-radius: 10px;
-    border: 1px solid #ddd;
-    margin-bottom: 15px;
-}
-
-.phone-row {
-    display: flex;
-    gap: 10px;
-    border: 1px solid #ddd;
-    padding: 10px;
-    border-radius: 10px;
-}
-
-.contact-form button {
-    margin-top: 20px;
-    padding: 10px 25px;
-    background: #3AB4F2;
-    color: white;
-    border-radius: 20px;
-    border: none;
-}
-
-.footer {
-    background: #BEE2FA;
-    margin-top: 60px;
-    border-top: 4px solid #0077C8;
-}
-
-.footer-top {
-    width: 90%;
-    max-width: 1200px;
-    margin: auto;
-    display: flex;
-    gap: 40px;
-    padding: 40px 0;
-    flex-wrap: wrap;
-}
-
-.footer-logo {
-    width: 220px;
-}
-
-.footer-bottom {
-    text-align: center;
-    padding: 15px 0;
-    background: #A9D9F8;
-}
-.footer-social img {
-    width: 30px;
-    margin-right: 15px;
-    cursor: pointer;
-}
-
-
-@media (max-width: 1024px) {
-    .nav-links { margin-left: 0; }
-    .bottom-block { width: 70%; }
-    .contact-container { width: 100%; }
-}
-
-@media (max-width: 768px) {
-
-    .menu-toggle { display: flex; }
-
-    .nav-links {
-        position: absolute;
-        top: 80px;
-        right: 30px;
-        background: #0b2540;
-        flex-direction: column;
-        gap: 20px;
-        padding: 20px;
-        border-radius: 12px;
-        display: none;
-    }
-
-    .nav-links.active {
-        display: flex;
-    }
-
-    .about-section {
-        flex-direction: column;
-    }
-
-    .bottom-block {
-        width: 90%;
-        flex-direction: column;
-        text-align: center;
-    }
-
-    .contact-container {
-        flex-direction: column;
-    }
-
-    .form-row {
-        flex-direction: column;
-    }
-
-    
- }
-</style>
-</head>
-
-<body>
-<div class="header">
-    <img id="logos" src="./images/bookkeeppro-logo.webp" alt="Bookkeepro Logo">
-    <div class="nav-links" id="navLinks">
-        <a href="#">Home</a>
-        <a href="#">About Us</a>
-        <a href="#">Services</a>
-        <a href="#">Contact Us</a>
-    </div>
-    <button class="login-btn" onclick="window.location.href='/login'">Login/Sign-Up</button>
-    <div class="menu-toggle" onclick="toggleMenu()">
-        <span></span><span></span><span></span>
-    </div>
-</div>
-
-<div class="hero"></div>
-
-<div class="bottom-block">
-    <div class="block-img"></div>
-    <div class="block-text">
-        <h1>CUT COSTS, KEEP QUALITY</h1>
-        <p>Your Globally Trusted Bookkeeping Partner.</p>
-    </div>
-</div>
-
-
-<section class="about-section">
-    <div class="text">
-        <h2>ABOUT <span style="color:#0077C8;">BOOK</span><span style="color:#FF7F11;">KEEPRO</span></h2>
-
-        <p>
-            Started as a Chartered Accountant firm in India in 1998.<br><br>
-            Expanded presence in Pune and Mumbai in India in 2018.<br><br>
-            Launched Bookkeepro Business Solutions Private Limited Company & 
-            Bookkeepro Business Solutions LLC in India and US in 2023 to cater to 
-            increasing international client base!
-        </p>
-
-        <p class="note">-- Our People Are Passionate About What We Do</p>
-    </div>
-
-    <img src="./images/young-business-people-using-computer-in-office.webp">
-</section>
-
-
-<section class="services-section">
-    <h2>PROFESSIONAL SERVICES@<span style="color:#0077C8;">BOOK</span><span style="color:#FF7F11;">KEEPRO</span></h2>
-
-    <div class="services-grid">
-
-        <div class="service-card">
-            <img src="./images/Gemini_Generated_Image_5pqvpl5pqvpl5pqv.webp">
-            <h3>Professional Bookkeeping for Firms & Businesses</h3>
-            <button>Get Consultation</button>
-        </div>
-
-        <div class="service-card">
-            <img src="./images/Gemini_Generated_Image_qacxnoqacxnoqacx.webp">
-            <h3>Professional & Globally Trusted Payroll Solutions</h3>
-            <button>Get Consultation</button>
-        </div>
-
-        <div class="service-card">
-            <img src="./images/Gemini_Generated_Image_5pqvpl5pqvpl5pqv.webp">
-            <h3>Professional Tax Planning & Preparation</h3>
-            <button>Get Consultation</button>
-        </div>
-
-    </div>
-</section>
-
-<section class="contact-section">
-
-    <h2 class="contact-title">
-        CONTACT@<span class="blue">BOOK</span><span class="orange">KEEPRO</span>
-    </h2>
-
-    <div class="contact-container">
-
-        <div class="contact-info">
-
-            <div class="info-box usa">
-                <h3>USA</h3>
-                <p>2520 Indigo Dr<br>McKinney, TX<br>75072, United States</p>
-                <p class="phone"><img src="/images/phone.webp"> +1469-796-6151 </p>
-            </div>
-
-            <div class="info-box ind">
-                <h3>IND</h3>
-                <p>508, White Square,<br>Hinjewadi Road, Pune<br>411057, India</p>
-                <p class="phone"><img src="/images/phone.webp"> +91 738 793 6020</p>
-            </div>
-        </div>
-
-        <div>
-        <form class="contact-form">
-
-            <div class="form-row">
-                <input type="text" placeholder="First Name">
-                <input type="text" placeholder="Last Name">
-            </div>
-
-            <input type="email" placeholder="Email Address">
-
-            <div class="phone-row">
-                <img src="/images/us-flag.webp" class="flag-icon">
-                <input type="text" placeholder="Mobile Number">
-            </div>
-
-            <button type="submit">SUBMIT</button>
-
-        </form>
-            <div class="email-box">
-                <img src="/images/email.webp">
-                <span>info@bookkeeppro.net </span>
-            </div>
-        </div>
-
-    </div>
-
-</section>
-
-<footer class="footer">
-
-    <div class="footer-top">
-
-        <div class="footer-left">
-            <img src="./images/bookkeeppro-logo.webp" class="footer-logo" alt="Bookkeepro">
-            <p>Your Globally Trusted Bookkeeping Partner.</p>
-
-            <div class="footer-social">
-                <img src="./images/facebook.webp" alt="facebook">
-                <img src="./images/linkedin.webp" alt="linkedin">
-                <img src="./images/instagram.webp" alt="instagram">
-            </div>
-        </div>
-
-        <div class="footer-links">
-            <h4>Quick Links</h4>
-            <a href="#">Home</a>
-            <a href="#">About Us</a>
-            <a href="#">Services</a>
-            <a href="#">Contact Us</a>
-        </div>
-
-        <div class="footer-contact">
-            <h4>Contact</h4>
-            <p>📍 USA: McKinney, TX</p>
-            <p>📍 India: Pune, Maharashtra</p>
-            <p>📧 info@bookkeeppro.net </p>
-            <p>📞 +1469-796-6151  / +91 738 793 6020</p>
-        </div>
-    </div>
-
-    <div class="footer-bottom">
-        <p>© 2024 Bookkeepro Business Solutions. All rights reserved.</p>
-    </div>
-
-</footer>
-
-
-<script>
-function toggleMenu() {
-    document.getElementById("navLinks").classList.toggle("active");
-}
-</script>
-</body>
-</html> -->
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -617,6 +67,7 @@ body {
   color: white;
   border-radius: 25px;
   border: none;
+  margin-top: -10px;
   font-weight: 600;
   cursor: pointer;
 }
@@ -889,7 +340,7 @@ body {
   border-top: 4px solid #0077C8;
 }
 
-.footer-top {
+/* .footer-top {
   width: 90%;
   max-width: 1200px;
   margin: auto;
@@ -897,6 +348,18 @@ body {
   gap: 40px;
   padding: 40px 0;
   flex-wrap: wrap;
+} */
+
+.footer-top{
+  width:90%;
+  max-width:1200px;
+  margin:auto;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  gap:40px;
+  padding:40px 0;
+  /* flex-wrap:wrap; */
 }
 
 .footer-logo {
@@ -912,6 +375,7 @@ body {
 .footer-social img {
   width: 30px;
   margin-right: 15px;
+  margin-top: 8px;
   cursor: pointer;
 }
 
@@ -1012,20 +476,25 @@ body {
   <div class="nav-container">
 
     <a href="/home"><img id="logos" src="./images/bookkeeppro-logo.webp" alt="Bookkeepro Logo"></a>
+    <div>
+      <nav id="navMenu" class="nav-menu">
+        <a href="/home">Home</a>
+        <a href="/about-us">About Us</a>
+        <a href="/services">Services</a>
+        <a href="/contact">Contact Us</a>
+        
+        <button class="login-btn" onclick="window.location.href='/login'">
+         Login / Sign-Up
+        </button>
+      </nav>
 
-    <nav id="navMenu" class="nav-menu">
-      <a href="/home">Home</a>
-      <a href="/about-us">About Us</a>
-      <a href="/services">Services</a>
-      <a href="/contact">Contact Us</a>
-    </nav>
+      <!-- <button class="login-btn" onclick="window.location.href='/login'">
+        Login / Sign-Up
+      </button> -->
 
-    <button class="login-btn" onclick="window.location.href='/login'">
-      Login / Sign-Up
-    </button>
-
-    <div class="hamburger" onclick="toggleMenu()">
-      <span></span><span></span><span></span>
+      <div class="hamburger" onclick="toggleMenu()">
+        <span></span><span></span><span></span>
+      </div>
     </div>
 
   </div>
@@ -1043,7 +512,7 @@ body {
 
 <section class="about-section">
   <div class="text">
-    <h2>ABOUT <span style="color:#0077C8;">BOOK</span><span style="color:#FF7F11;">KEEPRO</span></h2>
+    <h2>We are <span style="color:#0077C8;">BOOK</span><span style="color:#FF7F11;">KEEPRO</span></h2>
 
     <p>
       Started as a Chartered Accountant firm in India in 1998.<br><br>
@@ -1060,8 +529,8 @@ body {
 </section>
 
 <section class="services-section">
-  <h2>PROFESSIONAL SERVICES@<span style="color:#0077C8;">BOOK</span><span style="color:#FF7F11;">KEEPRO</span></h2>
-
+  <!-- <h2>Our SERVICES<span style="color:#0077C8;"> BOOK</span><span style="color:#FF7F11;">KEEPRO</span></h2> -->
+   <h2>OUR SERVICES</h2>
   <div class="services-grid">
 
     <div class="service-card">
@@ -1088,7 +557,7 @@ body {
 <section class="contact-section">
 
   <h2 class="contact-title">
-    CONTACT@<span class="blue">BOOK</span><span class="orange">KEEPRO</span>
+    CONTACT<span class="blue"> BOOK</span><span class="orange">KEEPRO</span>
   </h2>
 
   <div class="contact-container">
