@@ -21,7 +21,6 @@ router = APIRouter(prefix="/api/upload", tags=["upload"])
 SCOPES = ["https://www.googleapis.com/auth/drive"]
 DRIVE_FOLDER_ID = os.getenv("DRIVE_FOLDER_ID", None)
 
-# fallback token path
 OAUTH_TOKEN_FILE = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "..", "..", "..", "oauth_token.json")
 )
@@ -41,7 +40,6 @@ def get_drive_service():
     ]
 
     candidates = [p for p in candidates if p]
-
     logger.info(f"[upload] token lookup candidates: {candidates}")
 
     token_path = next((p for p in candidates if os.path.exists(p)), None)
@@ -128,31 +126,55 @@ async def upload_personal_document(
 ):
     try:
         drive_id = await _upload_to_drive(file, current_user.id, db)
-
         admin_email = os.getenv("ADMIN_EMAIL")
 
-        # email user
+        # Email to user
         await send_email(
             to=current_user.email,
-            subject="Document Uploaded Successfully — BookKeepro",
+            subject="New Personal Document Uploaded — BookKeepro",
             body=f"""
-            <h3>Upload Confirmation</h3>
-            <p>You successfully uploaded:</p>
-            <b>{file.filename}</b>
-            <br><br>
-            Our team will review your documents shortly.
+            <p>Dear Sir/Ma’am,</p>
+
+            <p>
+            We have successfully received your personal document:
+            </p>
+
+            <p><strong>{file.filename}</strong></p>
+
+            <p>
+            Our team will review the document and update you on the next steps shortly.
+            </p>
+
+            <p>
+            If any additional information is required, we will contact you promptly.
+            </p>
+
+            <p style="margin-top:20px;">
+            Kind regards,<br>
+            <strong>The BookKeepro Team</strong>
+            </p>
             """,
         )
 
-        # email admin
+        # Email to admin
         if admin_email:
             await send_email(
                 to=admin_email,
-                subject="User Uploaded Personal Document",
+                subject="New Personal Document Uploaded — BookKeepro",
                 body=f"""
-                <h3>New Personal Document Uploaded</h3>
-                <p><b>User:</b> {current_user.email}</p>
-                <p><b>File:</b> {file.filename}</p>
+                <p>Dear Team,</p>
+                
+                <p>the <strong>User:</strong> {current_user.email} has uploaded a personal document-</p>
+                <p><strong>File Uploaded:</strong> {file.filename}</p>
+
+                <p>
+                Kindly review the document and proceed with the next steps as applicable.
+                </p>
+
+                <p>
+                Thank you,<br>
+                <strong>BookKeepro Support Team</strong>
+                </p>
                 """,
             )
 
@@ -196,31 +218,51 @@ async def upload_business_document(
 ):
     try:
         drive_id = await _upload_to_drive(file, current_user.id, db)
-
         admin_email = os.getenv("ADMIN_EMAIL")
 
-        # email user
+        # Email to user
         await send_email(
             to=current_user.email,
             subject="Business Document Uploaded — BookKeepro",
             body=f"""
-            <h3>Upload Confirmation</h3>
-            <p>You uploaded:</p>
-            <b>{file.filename}</b>
-            <br><br>
-            Our review team will verify it shortly.
+            <p>Dear Sir/Ma’am,</p>
+
+            <p>
+            We have successfully received your business document:
+            </p>
+
+            <p><strong>{file.filename}</strong></p>
+
+            <p>
+            Our review team will verify the document and update you shortly.
+            </p>
+
+            <p>
+            Kind regards,<br>
+            <strong>BookKeepro Team</strong>
+            </p>
             """,
         )
 
-        # email admin
+        # Email to admin
         if admin_email:
             await send_email(
                 to=admin_email,
-                subject="User Uploaded Business Document",
+                subject="New Business Document Uploaded — BookKeepro",
                 body=f"""
-                <h3>New Business Document Uploaded</h3>
-                <p><b>User:</b> {current_user.email}</p>
-                <p><b>File:</b> {file.filename}</p>
+                <p>Dear Team,</p>
+
+                <p>the <strong>User:</strong> {current_user.email} has uploaded a Business document-</p>
+                <p><strong>File Uploaded:</strong> {file.filename}</p>
+                
+                <p>
+                Kindly review the document and proceed with the next steps as applicable.
+                </p>
+
+                <p>
+                Thank you,<br>
+                <strong>BookKeepro Support Team</strong>
+                </p>
                 """,
             )
 

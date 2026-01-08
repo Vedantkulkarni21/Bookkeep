@@ -29,24 +29,39 @@ async def notify_user_review(
     rejected_html = "".join(f"<li>{d}</li>" for d in rejected)
 
     body = f"""
-    <h2>Document Review Update — BookKeepro</h2>
+    <p>Dear Sir/Ma’am,</p>
 
-    <p>Your uploaded documents were reviewed.</p>
+    <p>
+    Your uploaded documents have been reviewed. Please find the status details below:
+    </p>
 
-    <h3 style="color:green">Approved</h3>
-    <ul>{approved_html or "<li>None</li>"}</ul>
+    <p><strong>Approved Documents</strong></p>
+    <ul>
+        {approved_html or "<li>None</li>"}
+    </ul>
 
-    <h3 style="color:red">Rejected</h3>
-    <ul>{rejected_html or "<li>None</li>"}</ul>
+    <p><strong>Rejected Documents</strong></p>
+    <ul>
+        {rejected_html or "<li>None</li>"}
+    </ul>
 
-    <p><b>Estimated Filing Timeline:</b> {timeline} days</p>
+    <p>
+    <strong>Estimated Filing Timeline:</strong> {timeline} days
+    </p>
 
-    <p>Our team will contact you if further information is needed.</p>
+    <p>
+    Our team will contact you if any additional information or clarification is required.
+    </p>
+
+    <p style="margin-top:20px;">
+    Kind regards,<br>
+    <strong>BookKeepro Team</strong>
+    </p>
     """
 
     await send_email(
         to=user.email,
-        subject="Your Document Review Status — BookKeepro",
+        subject="Document Review Update — BookKeepro",
         body=body
     )
 

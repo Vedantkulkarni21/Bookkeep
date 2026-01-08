@@ -13,29 +13,41 @@ class ContactForm(BaseModel):
 @router.post("/contact")
 async def contact_message(form: ContactForm, background: BackgroundTasks):
 
-    subject = "New Contact Form Submission — BookKeepro"
+    subject = "New Contact Enquiry Received — Follow-Up Required - BookKeepro"
 
     body = f"""
-New contact enquiry received:
-
-Name: {form.first_name} {form.last_name}
-Email: {form.email}
+Dear Team,
+<br> <br>
+A new contact enquiry has been received. Please find the details below:
+<br><br>
+Name: {form.first_name} {form.last_name}<br>
+Email: {form.email}<br>
 Phone: {form.phone}
-
-Please follow up with the user.
+<br><br>
+Kindly follow up with the user at the earliest convenience.
+<br><br>
+Thank you,
+<br>
+BookKeepro Support Team
 """
 
     # send email to admin
     background.add_task(
         send_email,
         to="info@bookkeepro.net",
-        subject="New Contact Form Submission — BookKeepro",
+        subject="New Contact Enquiry Received — Follow-Up Required - BookKeepro",
         body=f"""
-            New contact enquiry received:<br><br>
+            Dear Team,
+            <br> <br>
+            A new contact enquiry has been received. Please find the details below:
+            <br><br>
             <b>Name:</b> {form.first_name} {form.last_name}<br>
             <b>Email:</b> {form.email}<br>
             <b>Phone:</b> {form.phone}<br><br>
-            Please follow up with the user.
+            Kindly follow up with the user at the earliest convenience.
+            <br><br>
+            Thank you,<br>
+            BookKeepro Support Team
         """
     )
 
@@ -46,8 +58,8 @@ Please follow up with the user.
         subject="Thanks for contacting BookKeepro",
         body=f"""
             Hi {form.first_name},<br><br>
-            Thanks for reaching out to BookKeepro.<br>
-            Our team will get back to you shortly.<br><br>
+            Thank you for reaching out to BookKeepro.<br>
+            We’ve received your enquiry, and our team will get back to you shortly.<br><br>
             Best Regards,<br>
             BookKeepro Team
         """
