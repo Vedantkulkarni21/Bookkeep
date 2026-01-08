@@ -114,6 +114,10 @@ def services_page():
 def about_us_page():
     return serve_frontend_file("about-us.html")
 
+@app.get("/admin-login", tags=["frontend"])
+def admin_login_page():
+    return serve_frontend_file("admin-login.html")
+    
 @app.post("/logout")
 def logout():
     # JWT is stateless → nothing to invalidate server-side

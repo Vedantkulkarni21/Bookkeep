@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -132,7 +132,7 @@
 
       <div>
         <h4 style="color:#0077c8">Contact</h4>
-        <p>info@bookkeeppro.net</p>
+        <p>info@bookkeepro.net</p>
         <p>+1469-796-6151</p>
       </div>
     </div>
@@ -142,7 +142,6 @@
     </div>
   </footer>
 
-  <!-- AUTH GUARD -->
   <script>
     const token = localStorage.getItem("token");
     const role = localStorage.getItem("role");
@@ -151,7 +150,6 @@
     }
   </script>
 
-  <!-- UPLOAD LOGIC -->
   <script>
     const docs = [
       "Business Registration Certificate",
@@ -253,6 +251,322 @@
       div.innerHTML = `
         • ${name}
         <button class="view-btn" style="margin-left:6px"
+          onclick="window.open('https://drive.google.com/file/d/${id}/view','_blank')">
+          View
+        </button>
+      `;
+      extraList.appendChild(div);
+    }
+
+    document.getElementById("extraFile").addEventListener("change", async e=>{
+      const files = e.target.files;
+      const status = document.getElementById("extraStatus");
+      status.textContent="Uploading...";
+
+      for(const f of files){
+        const fd = new FormData();
+        fd.append("file", f);
+
+        const res = await fetch("/api/upload/business-document",{
+          method:"POST",
+          headers:{ Authorization:"Bearer "+token },
+          body:fd
+        });
+
+        if(res.ok){
+          const d = await res.json();
+          addOtherDoc(f.name, d.drive_file_id || d.file_id);
+        }
+      }
+
+      status.textContent="Uploaded ✓";
+      e.target.value="";
+    });
+
+    renderDocs();
+  </script>
+
+  <script>
+    function logoutUser(){
+      localStorage.removeItem("token");
+      localStorage.removeItem("role");
+      localStorage.removeItem("checklistDownloaded");
+      window.location.href="/login";
+    }
+  </script>
+
+</body>
+</html> -->
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Upload Business Documents - BookKeepro</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;font-family:"Poppins",sans-serif;}
+    body{background:#f5f5f5;color:#222;}
+
+    .header { background:#BEE2FA; padding:clamp(14px,3vw,22px); }
+    .header img { width:clamp(160px,40vw,240px); cursor:pointer; }
+
+    .logout-btn{
+      padding:10px 16px;background:#FF7F11;color:#fff;border-radius:25px;
+      border:none;font-weight:600;cursor:pointer;float:right;
+    }
+    .logout-btn:hover{background:#e56e0d;}
+
+    .container{
+      max-width:1000px;margin:90px auto 60px;background:#fff;
+      padding:28px;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.06);
+    }
+
+    .page-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+    .page-title h2{font-size:20px;color:#0077c8;}
+    .helper{font-size:14px;color:#666;}
+
+    .upload-list{display:flex;flex-direction:column;gap:12px;margin-top:18px;}
+
+    .upload-item{
+      display:flex;justify-content:space-between;align-items:center;
+      padding:12px;border-radius:10px;border:1px solid #e6eef6;background:#fbfdff;
+    }
+
+    .upload-left{display:flex;flex-direction:column;gap:6px;}
+    .doc-name{font-weight:600;}
+    .status{font-size:13px;color:#666;}
+
+    .upload-actions{display:flex;gap:10px;align-items:center;}
+
+    .upload-label{
+      padding:8px 12px;border-radius:8px;background:#0077c8;
+      color:#fff;cursor:pointer;
+    }
+
+    .delete-btn{
+      padding:8px 10px;border-radius:8px;background:#fff;
+      color:#ff6b6b;border:1px solid #ffd0d0;display:none;cursor:pointer;
+    }
+
+    .view-btn{
+      padding:8px 10px;border-radius:20px;background:#2da9ff;
+      color:#fff;border:none;font-size:12px;display:none;cursor:pointer;
+    }
+
+    /* always-visible view button for Other Docs */
+    .view-btn-inline{
+      padding:8px 10px;
+      border-radius:20px;
+      background:#2da9ff;
+      color:#fff;
+      border:none;
+      font-size:12px;
+      cursor:pointer;
+      display:inline-block;
+    }
+
+    .small-muted{font-size:13px;color:#888;}
+    .other-list{margin-top:8px;padding-left:4px;}
+
+    .footer{background:#bee2fa;margin-top:40px;padding-top:30px;border-top:4px solid #0077c8;}
+    .footer-top{width:90%;max-width:1200px;margin:20px auto;display:flex;justify-content:space-between;flex-wrap:wrap;gap:30px;}
+    .footer-logo{width:220px;}
+    .footer-bottom{background:#a9d9f8;text-align:center;padding:12px;font-size:14px;color:#444;}
+  </style>
+</head>
+
+<body>
+
+  <div class="header">
+    <img src="/images/bookkeeppro-logo.webp" onclick="window.location.href='/home'" alt="BookKeepPro"/>
+    <button class="logout-btn" onclick="logoutUser()">Logout</button>
+  </div>
+
+  <main class="container">
+
+    <div class="page-title">
+      <div>
+        <h2>Upload Business Documents</h2>
+        <div class="helper small-muted">
+          Upload required documents for your business. Files are stored in Google Drive.
+        </div>
+      </div>
+      <div class="helper">Allowed types: PDF, JPG, PNG · Max 10MB</div>
+    </div>
+
+    <div id="docWrapper" class="upload-list"></div>
+
+    <div style="margin-top:30px;">
+      <p class="small-muted" style="margin-bottom:12px;">
+        Upload any additional documents here. All file formats are allowed.
+      </p>
+
+      <div class="upload-item">
+        <div class="upload-left">
+          <div class="doc-name">Other Documents</div>
+          <div id="extraStatus" class="status small-muted"></div>
+
+          <div id="extraList" class="other-list"></div>
+        </div>
+
+        <div class="upload-actions">
+          <label class="upload-label" for="extraFile">Choose files</label>
+          <input id="extraFile" type="file" multiple style="display:none">
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:18px;">
+      <button onclick="window.location.href='/dashboard'"
+        style="padding:10px 14px;border-radius:8px;border:1px solid #ddd;background:#fff;">
+        Back to Dashboard
+      </button>
+    </div>
+
+  </main>
+
+  <footer class="footer">
+    <div class="footer-top">
+      <div>
+        <img src="/images/bookkeeppro-logo.webp" class="footer-logo"/>
+        <p>Your Globally Trusted Bookkeeping Partner.</p>
+      </div>
+
+      <div>
+        <h4 style="color:#0077c8">Quick Links</h4>
+        <a href="/home">Home</a><br>
+        <a href="/dashboard">Dashboard</a>
+      </div>
+
+      <div>
+        <h4 style="color:#0077c8">Contact</h4>
+        <p>info@bookkeepro.net</p>
+        <p>+1469-796-6151</p>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      © 2024 Bookkeepro Business Solutions. All rights reserved.
+    </div>
+  </footer>
+
+  <!-- AUTH GUARD -->
+  <script>
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+    if (!token || role?.toLowerCase() !== "user") {
+      window.location.href = "/login";
+    }
+  </script>
+
+  <!-- UPLOAD LOGIC -->
+  <script>
+    const docs = [
+      "Business Registration Certificate",
+      "Articles of Incorporation",
+      "Employer Identification Number (EIN)",
+      "Annual Financial Statements",
+      "Proof of Address",
+      "Bank Verification Letter"
+    ];
+
+    const uploadedFiles = {};
+    const wrapper = document.getElementById("docWrapper");
+
+    function renderDocs(){
+      wrapper.innerHTML = "";
+      docs.forEach((doc,i)=>{
+        wrapper.innerHTML += `
+          <div class="upload-item">
+            <div class="upload-left">
+              <div class="doc-name">${i+1}. ${doc}</div>
+              <div id="status${i}" class="status"></div>
+            </div>
+
+            <div class="upload-actions">
+              <label class="upload-label" for="file${i}">Choose file</label>
+              <input id="file${i}" type="file" style="display:none">
+
+              <button id="view${i}" class="view-btn">View</button>
+              <button id="delete${i}" class="delete-btn">Delete</button>
+            </div>
+          </div>
+        `;
+      });
+
+      docs.forEach((_,i)=>{
+        document.getElementById(`file${i}`).onchange = () => upload(i);
+        document.getElementById(`view${i}`).onclick = () => viewFile(i);
+        document.getElementById(`delete${i}`).onclick = () => deleteFile(i);
+      });
+    }
+
+    async function upload(i){
+      const f = document.getElementById(`file${i}`).files[0];
+      if(!f) return;
+
+      const st = document.getElementById(`status${i}`);
+      const view = document.getElementById(`view${i}`);
+      const del  = document.getElementById(`delete${i}`);
+
+      st.textContent = "Uploading...";
+
+      const fd = new FormData();
+      fd.append("file", f);
+
+      const res = await fetch("/api/upload/business-document",{
+        method:"POST",
+        headers:{ Authorization:"Bearer "+token },
+        body:fd
+      });
+
+      if(!res.ok){ st.textContent="Upload failed"; return; }
+
+      const d = await res.json();
+
+      uploadedFiles[i] = d.drive_file_id || d.file_id;
+
+      st.textContent = "Uploaded ✓";
+      view.style.display="inline-block";
+      del.style.display="inline-block";
+    }
+
+    function viewFile(i){
+      const id = uploadedFiles[i];
+      if(!id) return alert("Preview unavailable");
+      window.open(`https://drive.google.com/file/d/${id}/view`,"_blank");
+    }
+
+    async function deleteFile(i){
+      const id = uploadedFiles[i];
+      if(!id) return;
+
+      await fetch(`/api/upload/business-document/${id}`,{
+        method:"DELETE",
+        headers:{ Authorization:"Bearer "+token }
+      });
+
+      document.getElementById(`status${i}`).textContent="Deleted";
+      document.getElementById(`delete${i}`).style.display="none";
+      document.getElementById(`view${i}`).style.display="none";
+    }
+
+    // ---------- OTHER DOCUMENTS LIST + VIEW ----------
+
+    const extraList = document.getElementById("extraList");
+
+    function addOtherDoc(name,id){
+      const div = document.createElement("div");
+      div.className="small-muted";
+      div.innerHTML = `
+        • ${name}
+        <button class="view-btn-inline"
           onclick="window.open('https://drive.google.com/file/d/${id}/view','_blank')">
           View
         </button>

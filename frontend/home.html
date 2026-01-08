@@ -8,473 +8,332 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: "Poppins", sans-serif;
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:"Poppins",sans-serif;
 }
 
-body {
-  background: #f5f5f5;
-  overflow-x: hidden; /* prevents tiny phone scroll overflow */
+body{
+  background:#f5f5f5;
+  overflow-x:hidden;
 }
+
+img{max-width:100%;display:block}
 
 /* ================= NAVBAR ================= */
 
-.navbar {
-  width: 100%;
-  position: absolute;
-  top: 0;
-  z-index: 20;
+.navbar{
+  width:100%;
+  position:absolute;
+  top:0;
+  left:0;
+  z-index:20;
 }
 
-.nav-container {
-  width: 100%;
-  padding: 18px 30px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+.nav-container{
+  width:min(1200px,96%);
+  margin:auto;
+  padding:18px 12px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
 }
 
-/* Logo */
-#logos {
-  height: 60px;
-  object-fit: contain;
+#logos{
+  height:clamp(42px,5vw,64px);
+  object-fit:contain;
 }
 
-/* Desktop Nav Menu */
-.nav-menu {
-  display: flex;
-  gap: 40px;
+/* NAV MENU */
+
+.nav-menu{
+  display:flex;
+  gap:32px;
+  align-items:center;
 }
 
-.nav-menu a {
-  text-decoration: none;
-  color: white;
-  font-size: 16px;
-  font-weight: 500;
+.nav-menu a{
+  text-decoration:none;
+  color:white;
+  font-size:15px;
+  font-weight:500;
 }
 
-.nav-menu a:hover {
-  color: #FFD28C;
+.nav-menu a:hover{color:#FFD28C}
+
+/* login buttons */
+
+.login-btn{
+  padding:10px 14px;
+  background:#FF7F11;
+  color:#fff;
+  border-radius:25px;
+  border:none;
+  font-weight:600;
+  cursor:pointer;
 }
 
-/* Login Button */
-.login-btn {
-  padding: 10px 14px;
-  background: #FF7F11;
-  color: white;
-  border-radius: 25px;
-  border: none;
-  margin-top: -10px;
-  font-weight: 600;
-  cursor: pointer;
+.login-btn:hover{background:#e56e0d}
+
+.login-btn:active{
+  transform:translateY(1px) scale(.94);
+  box-shadow:0 2px 6px rgba(0,0,0,.12);
 }
 
-.login-btn:hover {
-  background: #e56e0d;
+/* desktop vs mobile login visibility */
+
+.desktop-login{display:inline-block;}
+.mobile-login{display:none;}
+
+.hamburger{
+  display:none;
+  flex-direction:column;
+  gap:4px;
+  cursor:pointer;
 }
 
-/* Hamburger */
-.hamburger {
-  display: none;
-  flex-direction: column;
-  gap: 5px;
-  cursor: pointer;
-}
-
-.hamburger span {
-  width: 26px;
-  height: 3px;
-  background: white;
-  border-radius: 2px;
+.hamburger span{
+  width:26px;
+  height:3px;
+  background:white;
+  border-radius:2px;
 }
 
 /* ================= HERO ================= */
 
-.hero {
-  width: 100%;
-  height: 550px;
-  /* background-image: url('/images/Background-image.webp'); */
-  background-image: url('./images/home-background.jpg');
-  background-size: cover;
-  background-position: center;
-  background-color: rgba(0,0,0,0.4);
-  background-blend-mode: darken;
+.hero{
+  width:100%;
+  min-height:580px;
+  height:clamp(420px,60vh,620px);
+  background:
+    linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.45)),
+    url("./images/home-background.jpg");
+  background-size:cover;
+  background-position:center;
 }
 
 /* ================= BOTTOM BLOCK ================= */
 
-.bottom-block {
-  width: 65%;
-  margin: -370px auto 300px;
-  background: white;
-  padding: 15px 15px;
-  border-radius: 8px;
-  display: flex;
-  gap: 25px;
-  align-items: center;
-  box-shadow: 0px 3px 12px rgba(0,0,0,0.15);
-  position: relative;
+.bottom-block{
+  width:min(900px,92%);
+  margin:-360px auto 300px;
+  background:#fff;
+  padding:18px;
+  border-radius:12px;
+  display:flex;
+  gap:22px;
+  align-items:center;
+  box-shadow:0 3px 12px rgba(0,0,0,.15);
 }
 
-.block-img {
-  width: 120px;
-  height: 120px;
-  background-image: url('/images/small.webp');
-  background-size: cover;
-  background-position: center;
-  border-radius: 12px;
+.block-img{
+  width:120px;
+  height:120px;
+  border-radius:12px;
+  background:url("/images/small.webp") center/cover;
 }
 
-.block-text h1 {
-  font-size: 25px;
-  font-weight: 700;
+.block-text h1{
+  font-size:clamp(18px,3vw,26px);
+  font-weight:700;
 }
 
-.block-text p {
-  color: #555;
-}
+.block-text p{color:#555}
 
 /* ================= ABOUT ================= */
 
-.about-section {
-  width: 90%;
-  max-width: 1200px;
-  margin: 60px auto;
-  display: flex;
-  gap: 40px;
+.about-section{
+  width:min(1200px,92%);
+  margin:60px auto;
+  display:flex;
+  gap:32px;
 }
 
-.about-section h2 {
-  font-size: 30px;
-  font-weight: 700;
+.about-section h2{
+  font-size:clamp(22px,3vw,30px);
+  font-weight:700;
 }
 
-.about-section .text p {
-  line-height: 1.8;
-  font-size: 15px;
-  color: #333;
+.about-section .text p{
+  line-height:1.8;
+  font-size:15px;
+  color:#333;
 }
 
-.about-section .note {
-  margin-top: 15px;
-  font-style: italic;
-  color: #FF7F11;
+.about-section .note{
+  margin-top:12px;
+  color:#FF7F11;
+  font-style:italic;
 }
 
-.text h2{
-  margin-bottom: 20px;
-}
-
-.about-section img {
-  width: 100%;
-  height: 300px;
-  object-fit: cover;
-  border-radius: 8px;
+.about-section img{
+  width:100%;
+  height:300px;
+  border-radius:10px;
+  object-fit:cover;
 }
 
 /* ================= SERVICES ================= */
 
-.services-section {
-  width: 90%;
-  max-width: 1200px;
-  margin: 50px auto;
+.services-section{
+  width:min(1200px,92%);
+  margin:50px auto;
 }
 
-.services-section h2 {
-  font-size: 28px;
-  font-weight: 700;
-  margin-bottom: 25px;
+.services-section h2{
+  font-size:26px;
+  font-weight:700;
+  margin-bottom:22px;
 }
 
-.services-grid {
-  display: flex;
-  gap: 25px;
-  flex-wrap: wrap;
-  justify-content: space-between;
+.services-grid{
+  display:flex;
+  gap:22px;
+  flex-wrap:wrap;
+  justify-content:space-between;
 }
 
-.service-card {
-  flex: 1;
-  min-width: 260px;
-  background: #3AB4F2;
-  padding: 25px;
-  border-radius: 20px;
-  text-align: center;
-  color: white;
-  box-shadow: 0px 4px 12px rgba(0,0,0,0.15);
-  transition: 0.3s;
+.service-card{
+  flex:1;
+  min-width:260px;
+  background:#3AB4F2;
+  padding:22px;
+  border-radius:20px;
+  color:#fff;
+  text-align:center;
+  box-shadow:0 4px 12px rgba(0,0,0,.15);
+  transition:.25s;
 }
 
-.service-card:hover {
-  transform: translateY(-5px);
+.service-card:hover{transform:translateY(-4px)}
+
+.service-card img{
+  width:110px;
+  height:110px;
+  border-radius:50%;
+  object-fit:cover;
 }
 
-.service-card img {
-  width: 110px;
-  height: 110px;
-  border-radius: 50%;
-  object-fit: cover;
+.service-card h3{
+  margin-top:12px;
+  font-size:15px;
+  font-weight:600;
 }
 
-.service-card h3 {
-  margin-top: 15px;
-  font-size: 16px;
-  font-weight: 600;
+.service-card button{
+  margin-top:12px;
+  padding:10px 18px;
+  background:#FF7F11;
+  border:none;
+  border-radius:20px;
+  color:#fff;
+  cursor:pointer;
 }
 
-.service-card button {
-  margin-top: 15px;
-  padding: 10px 18px;
-  background: #FF7F11;
-  border: none;
-  border-radius: 20px;
-  color: white;
-  cursor: pointer;
-}
-
-/* ================= CONTACT ================= */
-
-.contact-section {
-  width: 90%;
-  max-width: 1200px;
-  margin: 70px auto;
-  /* border: solid 2px rgb(131, 124, 124);
-  border-radius: 15px; */
-}
-
-.contact-title {
-  font-size: 28px;
-  font-weight: 700;
-  margin-top: 70px;
-  margin-bottom: 10px;
-  text-align: center;
-}
-
-.contact-sub-title {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-.contact-container {
-  display: flex;
-  padding: 20px;
-  width: 70%;
-  gap: 35px;
-  margin: auto;
-}
-
-/* LEFT */
-
-.contact-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
-}
-
-.info-box {
-  padding: 20px;
-  border-radius: 15px;
-  color: white;
-}
-
-.usa { background: #3AB4F2; }
-.ind { background: #FF7F11; }
-
-/* RIGHT */
-
-.contact-form {
-  flex: 1.3;
-  background: white;
-  padding: 50px;
-  border-radius: 15px;
-  box-shadow: 0px 3px 10px rgba(0,0,0,0.15);
-}
-
-.form-row {
-  display: flex;
-  gap: 15px;
-}
-
-.contact-form input {
-  width: 100%;
-  padding: 12px 15px;
-  border-radius: 10px;
-  border: 1px solid #ddd;
-  margin-bottom: 15px;
-}
-
-.phone-row {
-  display: flex;
-  gap: 10px;
-  border: 1px solid #ddd;
-  padding: 10px;
-  border-radius: 10px;
-}
-
-.phone img{
-    width: 15px;
-    margin-right: 0px;
-}
-
-.email-box {
-  display: flex;
-  align-items: center;
-  margin-top: 20px;
-  gap: 10px;
-  font-size: 14px;
-  color: #333;
-}
-
-.email-box img{
-     width: 20px;
-    margin-right: 0px;
-}
-
-.contact-form button {
-  margin-top: 20px;
-  padding: 10px 25px;
-  background: #3AB4F2;
-  color: white;
-  border-radius: 20px;
-  border: none;
+.service-card button:active{
+  transform:translateY(1px) scale(.94);
+  box-shadow:0 2px 6px rgba(0,0,0,.12);
 }
 
 /* ================= FOOTER ================= */
 
-.footer {
-  background: #BEE2FA;
-  margin-top: 60px;
-  border-top: 4px solid #0077C8;
+.footer{
+  background:#BEE2FA;
+  margin-top:60px;
+  border-top:4px solid #0077C8;
 }
-
-/* .footer-top {
-  width: 90%;
-  max-width: 1200px;
-  margin: auto;
-  display: flex;
-  gap: 40px;
-  padding: 40px 0;
-  flex-wrap: wrap;
-} */
 
 .footer-top{
-  width:90%;
-  max-width:1200px;
+  width:min(1200px,92%);
   margin:auto;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
+  display:flex;
+  justify-content:space-between;
   gap:40px;
   padding:40px 0;
-  /* flex-wrap:wrap; */
+  flex-wrap:wrap;
 }
 
-.footer-logo {
-  width: 220px;
-}
-
-.footer-bottom {
-  text-align: center;
-  padding: 15px 0;
-  background: #A9D9F8;
-}
-
-.footer-social img {
-  width: 30px;
-  margin-right: 15px;
-  margin-top: 8px;
-  cursor: pointer;
-}
+.footer-logo{width:220px}
 
 .footer-links{
-  display: flex;
-  flex-direction: column;
-  margin-left: 30px;
-  margin-right: 30px;
-  gap: 10px;
-  text-decoration: none;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
 }
+
 .footer-links a{
-  text-decoration: none;
-  color: #0b2540;
-  font-size: 16px;
-  font-weight: 500;
+  text-decoration:none;
+  color:#0b2540;
+  font-size:16px;
+  font-weight:500;
 }
 
-/* ================= RESPONSIVE ================= */
-
-@media (max-width: 1024px) {
-  .bottom-block { width: 70%; }
-  .contact-container { width: 100%; }
+.footer-bottom{
+  text-align:center;
+  padding:15px 0;
+  background:#A9D9F8;
 }
 
-/* ================= MOBILE NAV + LAYOUT FIX ================= */
+/* =======================================================
+   RESPONSIVE BREAKPOINTS
+   ======================================================= */
 
-@media (max-width: 900px) {
+@media (max-width:992px){
 
-  /* keeps hamburger inside screen */
-  .nav-container {
-    padding: 14px 16px;
+  .about-section{flex-direction:column;}
+
+  .bottom-block{
+    width:96%;
+    flex-direction:column;
+    text-align:center;
+    margin-top:-300px;
   }
 
-  #logos {
-    height: 48px;
+  /* mobile nav dropdown */
+
+  .nav-menu{
+    display:none;
+    position:absolute;
+    top:76px;
+    left:0;
+    width:100%;
+    background:#0b2540;
+    padding:20px 0;
+    flex-direction:column;
+    gap:18px;
+    align-items:center;
   }
 
-  .hamburger {
-    display: flex;
-    margin-left: auto;
+  .nav-menu.active{display:flex;}
+
+  /* desktop login hidden */
+  .desktop-login{display:none;}
+
+  /* mobile login visible */
+  .mobile-login{
+    display:block;
+    margin-top:6px;
+    padding:10px 18px;
+    border-radius:20px;
+    background:#FF7F11;
+    color:#fff;
+    font-weight:600;
+    width:140px;
+    text-align:center;
   }
 
-  .nav-menu {
-    position: absolute;
-    top: 78px;
-    left: 0;
-    right: 0;
-    width: 100%;
-    background: #0b2540;
-    padding: 20px 0;
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    gap: 18px;
-  }
+  .hamburger{display:flex;}
+}
 
-  .nav-menu.active {
-    display: flex;
-  }
+@media (max-width:576px){
 
-  /* hide desktop login on mobile */
-  .login-btn {
-    display: none;
-  }
+  .service-card{min-width:100%}
 
-  /* show login button inside dropdown */
-  .nav-menu::after {
-    content: "Login / Sign-Up";
-    margin-top: 10px;
-    padding: 10px 18px;
-    border-radius: 20px;
-    background: #FF7F11;
-    color: white;
-    font-weight: 600;
-  }
+  .service-card h3{font-size:14px;}
 
-  .about-section { flex-direction: column; }
-
-  .bottom-block {
-    width: 90%;
-    flex-direction: column;
-    text-align: center;
-  }
-
-  .contact-container { flex-direction: column; }
-
-  .form-row { flex-direction: column; }
+  .bottom-block{margin-bottom:240px;}
 }
 </style>
 </head>
@@ -486,47 +345,63 @@ body {
 <div class="navbar">
   <div class="nav-container">
 
-    <a href="/home"><img id="logos" src="./images/bookkeeppro-logo.webp" alt="Bookkeepro Logo"></a>
-    <div>
-      <nav id="navMenu" class="nav-menu">
-        <a href="/home">Home</a>
-        <a href="/about-us">About Us</a>
-        <a href="/services">Services</a>
-        <a href="/contact">Contact Us</a>
-        
-        <button class="login-btn" onclick="window.location.href='/login'">
-         Login / Sign-Up
-        </button>
-      </nav>
+    <a href="/home">
+      <img id="logos" src="./images/bookkeeppro-logo.webp" alt="Bookkeepro Logo">
+    </a>
 
-      <!-- <button class="login-btn" onclick="window.location.href='/login'">
-        Login / Sign-Up
-      </button> -->
+    <nav id="navMenu" class="nav-menu">
 
-      <div class="hamburger" onclick="toggleMenu()">
-        <span></span><span></span><span></span>
-      </div>
+      <a href="/home">Home</a>
+      <a href="/about-us">About Us</a>
+      <a href="/services">Services</a>
+      <a href="/contact">Contact Us</a>
+
+      <!-- DESKTOP LOGIN -->
+      <button class="login-btn desktop-login"
+              onclick="window.location.href='/login'">
+        Sign in
+      </button>
+
+      <!-- MOBILE LOGIN -->
+      <button class="login-btn mobile-login"
+              onclick="window.location.href='/login'">
+        Sign in
+      </button>
+
+    </nav>
+
+    <div class="hamburger" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
     </div>
 
   </div>
 </div>
 
+<!-- ================= HERO ================= -->
+
 <div class="hero"></div>
+
+<!-- ================= BOTTOM HEADER BLOCK ================= -->
 
 <div class="bottom-block">
   <div class="block-img"></div>
+
   <div class="block-text">
-    <!-- <h1>CUT COSTS, KEEP QUALITY</h1> -->
-     <h1>PRECISION | COMPLIANCE | FINANCIAL GROWTH</h1>
+    <h1>PRECISION | COMPLIANCE | FINANCIAL GROWTH</h1>
     <p>Your Trusted Bookkeeping & Financial Operations Partner for Growing Businesses</p>
   </div>
 </div>
 
+<!-- ================= ABOUT ================= -->
+
 <section class="about-section">
   <div class="text">
-    <h2>We are <span style="color:#0077C8;">BOOK</span><span style="color:#FF7F11;">KEEPRO</span></h2>
 
-    <p class="about-para">
+    <h2>
+      We are <span style="color:#0077C8;">BOOK</span><span style="color:#FF7F11;">KEEPRO</span>
+    </h2>
+
+    <p>
       Our journey began in 1998 as a Chartered Accountant firm in India, built on strong fundamentals of accounting, compliance, integrity, and long-term client relationships. Over the years, we earned the trust of businesses by delivering accurate, compliant, and dependable financial services.
       In 2018, responding to growing demand and an expanding client base, we strengthened our presence by establishing operations in Pune and Mumbai, two of India’s major business hubs. This phase marked our evolution from a traditional CA practice into a more structured, process-driven financial services organization.
     </p>
@@ -537,97 +412,43 @@ body {
   <img src="./images/home-about.jpg">
 </section>
 
+<!-- ================= SERVICES ================= -->
+
 <section class="services-section">
-  <!-- <h2>Our SERVICES<span style="color:#0077C8;"> BOOK</span><span style="color:#FF7F11;">KEEPRO</span></h2> -->
-   <h2>OUR SERVICES</h2>
+  <h2>OUR SERVICES</h2>
+
   <div class="services-grid">
 
     <div class="service-card">
       <img src="./images/Gemini_Generated_Image_5pqvpl5pqvpl5pqv.webp">
       <h3>Professional Bookkeeping for Firms & Businesses</h3>
-      <button>Get Consultation</button>
+      <a href="/contact"><button>Get Consultation</button></a>
     </div>
 
     <div class="service-card">
       <img src="./images/Gemini_Generated_Image_qacxnoqacxnoqacx.webp">
       <h3>Professional & Globally Trusted Payroll Solutions</h3>
-      <button>Get Consultation</button>
+      <a href="/contact"><button>Get Consultation</button></a>
     </div>
 
     <div class="service-card">
-      <!-- <img src="./images/Gemini_Generated_Image_5pqvpl5pqvpl5pqv.webp"> -->
       <img src="./images/home-card.jpg">
       <h3>Professional Tax Planning & Preparation</h3>
-      <button>Get Consultation</button>
+      <a href="/contact"><button>Get Consultation</button></a>
     </div>
 
   </div>
 </section>
 
-<!-- <section class="contact-section">
-
-  <h2 class="contact-title">
-    CONTACT<span style="color:#0077C8;"> BOOK</span><span style="color:#FF7F11;">KEEPRO</span>
-  </h2>
-  <h4 class="contact-sub-title">We manage your books, compliance and reports—so you focus on growth</h4>
-
-  <div class="contact-container">
-
-    <div class="contact-info">
-
-      <div class="info-box usa">
-        <h3>USA</h3>
-        <p>2520 Indigo Dr<br>McKinney, TX<br>75072, United States</p>
-        <p class="phone"><img src="/images/call.webp"> +1469-796-6151 </p>
-      </div>
-
-      <div class="info-box ind">
-        <h3>IND</h3>
-        <p>508, White Square,<br>Hinjewadi Road, Pune<br>411057, India</p>
-        <p class="phone"><img src="/images/call.webp"> +91 738 793 6020</p>
-      </div>
-    </div>
-
-    <div>
-      <form class="contact-form">
-
-        <div class="form-row">
-          <input type="text" placeholder="First Name">
-          <input type="text" placeholder="Last Name">
-        </div>
-
-        <input type="email" placeholder="Email Address">
-
-        <div class="phone-row">
-          <input type="text" placeholder="Mobile Number">
-        </div>
-
-        <button type="submit">SUBMIT</button>
-
-        
-        <div class="email-box">
-            <img src="/images/mail.webp">
-            <span>info@bookkeeppro.net</span>
-        </div>
-      </form>
-
-    </div>
-  </div>
-</section> -->
+<!-- ================= FOOTER ================= -->
 
 <footer class="footer">
 
   <div class="footer-top">
 
     <div class="footer-left">
-      <img src="./images/bookkeeppro-logo.webp" class="footer-logo" alt="Bookkeepro">
+      <img src="./images/bookkeeppro-logo.webp" class="footer-logo">
       <p>Your Globally Trusted Bookkeeping Partner.</p>
-
-      <div class="footer-social">
-        <img src="./images/facebook.webp" alt="facebook">
-        <img src="./images/linkedin.webp" alt="linkedin">
-        <img src="./images/instagram.webp" alt="instagram">
-      </div>
     </div>
 
     <div class="footer-links">
@@ -642,20 +463,20 @@ body {
       <h4>Contact</h4>
       <p>📍 USA: McKinney, TX</p>
       <p>📍 India: Pune, Maharashtra</p>
-      <p>📧 info@bookkeeppro.net </p>
+      <p>📧 info@bookkeepro.net</p>
       <p>📞 +1469-796-6151 / +91 738 793 6020</p>
     </div>
 
   </div>
 
   <div class="footer-bottom">
-    <p>© 2024 Bookkeepro Business Solutions. All rights reserved.</p>
+    © 2024 Bookkeepro Business Solutions. All rights reserved.
   </div>
 
 </footer>
 
 <script>
-function toggleMenu() {
+function toggleMenu(){
   document.getElementById("navMenu").classList.toggle("active");
 }
 </script>

@@ -41,7 +41,11 @@ body{
 .doc-table th{background:#f5f7fa}
 .view-btn{
   background:#2da9ff;color:#fff;border:none;
-  padding:6px 14px;border-radius:20px;font-size:12px;cursor:pointer;margin-left:10px
+  padding:6px 14px;border-radius:20px;font-size:12px;cursor:pointer;margin-left:10px;
+}
+.view-btn:active{
+  transform:translateY(1px) scale(.94);
+  box-shadow:0 2px 6px rgba(0,0,0,.12);
 }
 .timeline-box{flex:1;border-left:1px solid #aaa;padding:20px;text-align:center}
 .timeline-control{display:flex;justify-content:center;gap:14px;margin:20px 0}
@@ -49,6 +53,10 @@ body{
 .approve-filing-btn{
   background:#2da9ff;color:#fff;border:none;
   padding:12px 18px;border-radius:20px;cursor:pointer;width:100%
+}
+.approve-filing-btn:active{
+  transform:translateY(1px) scale(.96);
+  box-shadow:0 2px 6px rgba(0,0,0,.12);
 }
 .footer{background:#BEE2FA;padding:clamp(16px,4vw,22px);text-align:center}
 .footer img{width:clamp(120px,30vw,160px)}
