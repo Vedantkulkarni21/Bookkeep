@@ -23,11 +23,13 @@ class User(Base):
 
 class UploadedFile(Base):
     __tablename__ = "uploaded_files"
+
     id = Column(Integer, primary_key=True, index=True)
-    filename = Column(String(512))
-    drive_file_id = Column(String(200))
+    filename = Column(String(512), nullable=False)
+    drive_file_id = Column(String(200), nullable=False)
     content_type = Column(String(100))
+    doc_type = Column(String(150))   # 🔥 ADD THIS
     uploaded_at = Column(DateTime(timezone=True), server_default=func.now())
-    owner_id = Column(Integer, ForeignKey("users.id"))
+    owner_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+
     owner = relationship("User", back_populates="uploads")
-# ...existing code...

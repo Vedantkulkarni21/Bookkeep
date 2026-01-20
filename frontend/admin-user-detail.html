@@ -96,6 +96,21 @@ body{
     </div>
   </div>
 
+  <div id="engagementBox" style="
+  margin-bottom:20px;
+  padding:14px;
+  border:1px solid #cfe3f7;
+  border-radius:12px;
+  background:#f7fbff;
+  display:none;
+">
+  <b>General Engagement Form</b>
+  <button id="engagementViewBtn" class="view-btn">
+    View
+  </button>
+</div>
+
+
   <div class="approval-panel">
 
     <div class="doc-table-box">
@@ -130,12 +145,12 @@ body{
 
 <div class="footer">
   <img src="/images/bookkeeppro-logo.webp">
-  <small>© 2024 Bookkeepro Business Solutions</small>
+  <small>© 2026 Bookkeepro Business Solutions</small>
 </div>
 
 
 <!-- ========= SCRIPT (SCOPED + PERSISTENT) ========= -->
-<script>
+<!-- <script>
 (() => {
 
 const params = new URLSearchParams(window.location.search);
@@ -153,12 +168,24 @@ if (!userId) {
   window.location.href = "/admin-dashboard";
 }
 
-/* 🟢 In-page persistent review state */
-let docReviewState = {};   // { filename: "approved" | "rejected" }
+/* 🔐 STORAGE KEY (PER USER) */
+const REVIEW_STORAGE_KEY = `docReviewState_${userId}`;
 
+/* 🟢 Persistent review state */
+let docReviewState = JSON.parse(
+  localStorage.getItem(REVIEW_STORAGE_KEY) || "{}"
+);
+
+/* 🕒 Timeline */
 let timeline = 0;
-function incrementTimeline(){ timeline++; document.getElementById("timelineValue").textContent = timeline; }
-function decrementTimeline(){ if(timeline>0) timeline--; document.getElementById("timelineValue").textContent = timeline; }
+function incrementTimeline(){
+  timeline++;
+  document.getElementById("timelineValue").textContent = timeline;
+}
+function decrementTimeline(){
+  if(timeline > 0) timeline--;
+  document.getElementById("timelineValue").textContent = timeline;
+}
 window.incrementTimeline = incrementTimeline;
 window.decrementTimeline = decrementTimeline;
 
@@ -177,7 +204,90 @@ async function loadUserDetails() {
 
   const data = await res.json();
   const user = data.user || {};
-  const docs = data.documents || [];
+  // const docs = data.documents || [];
+  const engagementBox = document.getElementById("engagementBox");
+const engagementViewBtn = document.getElementById("engagementViewBtn");
+
+/* Reset */
+engagementBox.style.display = "none";
+tbody.innerHTML = "";
+
+let normalDocs = [];
+
+docs.forEach(d => {
+  if (d.doc_type === "EngagementLetter") {
+    // 🔥 SPECIAL CASE
+    engagementBox.style.display = "flex";
+    engagementBox.style.justifyContent = "space-between";
+    engagementBox.style.alignItems = "center";
+
+    engagementViewBtn.onclick = () => {
+      window.open(
+        `https://drive.google.com/file/d/${d.drive_file_id}/view`,
+        "_blank"
+      );
+    };
+  } else {
+    normalDocs.push(d);
+  }
+});
+
+/* Render normal documents */
+if (!normalDocs.length) {
+  tbody.innerHTML = `
+    <tr>
+      <td colspan="3" style="text-align:center;color:#6b7a86">
+        No other documents uploaded
+      </td>
+    </tr>`;
+  return;
+}
+
+normalDocs.forEach((d, i) => {
+  const filename = d.filename;
+  const savedState = docReviewState[filename] || null;
+
+  const tr = document.createElement("tr");
+  tr.innerHTML = `
+    <td>${i + 1}. ${filename}
+      <button class="view-btn">View</button>
+    </td>
+    <td><input type="checkbox" class="approve"></td>
+    <td><input type="checkbox" class="reject"></td>
+  `;
+
+  const approve = tr.querySelector(".approve");
+  const reject = tr.querySelector(".reject");
+
+  if (savedState === "approved") approve.checked = true;
+  if (savedState === "rejected") reject.checked = true;
+
+  approve.addEventListener("change", () => {
+    if (approve.checked) {
+      reject.checked = false;
+      docReviewState[filename] = "approved";
+    } else delete docReviewState[filename];
+    localStorage.setItem(REVIEW_STORAGE_KEY, JSON.stringify(docReviewState));
+  });
+
+  reject.addEventListener("change", () => {
+    if (reject.checked) {
+      approve.checked = false;
+      docReviewState[filename] = "rejected";
+    } else delete docReviewState[filename];
+    localStorage.setItem(REVIEW_STORAGE_KEY, JSON.stringify(docReviewState));
+  });
+
+  tr.querySelector(".view-btn").onclick = () => {
+    window.open(
+      `https://drive.google.com/file/d/${d.drive_file_id}/view`,
+      "_blank"
+    );
+  };
+
+  tbody.appendChild(tr);
+});
+
 
   document.getElementById("detailName").textContent = user.name || "—";
   document.getElementById("detailRole").textContent = user.role || "—";
@@ -189,17 +299,17 @@ async function loadUserDetails() {
   tbody.innerHTML = "";
 
   if (!docs.length){
-    tbody.innerHTML =
-      `<tr><td colspan="3" style="text-align:center;color:#6b7a86">
-         No documents uploaded
-       </td></tr>`;
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="3" style="text-align:center;color:#6b7a86">
+          No documents uploaded
+        </td>
+      </tr>`;
     return;
   }
 
   docs.forEach((d,i)=>{
     const filename = d.filename;
-
-    // restore saved state if exists
     const savedState = docReviewState[filename] || null;
 
     const tr = document.createElement("tr");
@@ -207,7 +317,6 @@ async function loadUserDetails() {
       <td>${i+1}. ${filename}
         <button class="view-btn">View</button>
       </td>
-
       <td><input type="checkbox" class="approve"></td>
       <td><input type="checkbox" class="reject"></td>
     `;
@@ -215,7 +324,7 @@ async function loadUserDetails() {
     const approve = tr.querySelector(".approve");
     const reject  = tr.querySelector(".reject");
 
-    // apply persisted selection
+    /* Restore saved state */
     if(savedState === "approved") approve.checked = true;
     if(savedState === "rejected") reject.checked = true;
 
@@ -223,18 +332,33 @@ async function loadUserDetails() {
       if(approve.checked){
         reject.checked = false;
         docReviewState[filename] = "approved";
-      } else delete docReviewState[filename];
+      } else {
+        delete docReviewState[filename];
+      }
+      localStorage.setItem(
+        REVIEW_STORAGE_KEY,
+        JSON.stringify(docReviewState)
+      );
     });
 
     reject.addEventListener("change",()=>{
       if(reject.checked){
         approve.checked = false;
         docReviewState[filename] = "rejected";
-      } else delete docReviewState[filename];
+      } else {
+        delete docReviewState[filename];
+      }
+      localStorage.setItem(
+        REVIEW_STORAGE_KEY,
+        JSON.stringify(docReviewState)
+      );
     });
 
     tr.querySelector(".view-btn").addEventListener("click",()=>{
-      window.open(`https://drive.google.com/file/d/${d.drive_file_id}/view`,`_blank`);
+      window.open(
+        `https://drive.google.com/file/d/${d.drive_file_id}/view`,
+        `_blank`
+      );
     });
 
     tbody.appendChild(tr);
@@ -242,7 +366,7 @@ async function loadUserDetails() {
 }
 
 
-/* 🟢 Send review mail when button pressed */
+/* 📧 Send review mail */
 async function approveForFiling(){
 
   const approved = [];
@@ -270,6 +394,8 @@ async function approveForFiling(){
   });
 
   if(res.ok){
+    localStorage.removeItem(REVIEW_STORAGE_KEY);
+    docReviewState = {};
     alert("Review email sent to user successfully");
   } else {
     alert("Failed to send email");
@@ -279,9 +405,8 @@ async function approveForFiling(){
 window.approveForFiling = approveForFiling;
 
 
-/* auto refresh — but keeps selections */
+/* 🔄 Auto refresh (SAFE) */
 let refreshInterval = null;
-
 document.addEventListener("DOMContentLoaded",()=>{
   loadUserDetails();
   refreshInterval = setInterval(loadUserDetails, 5000);
@@ -294,9 +419,7 @@ window.addEventListener("beforeunload",()=>{
 
 function goBack(){ window.location.href="/admin-dashboard"; }
 function logoutUser(){
-  localStorage.removeItem("token");
-  localStorage.removeItem("role");
-  localStorage.removeItem("checklistDownloaded");
+  localStorage.clear();
   window.location.href="/login";
 }
 
@@ -304,7 +427,234 @@ window.goBack = goBack;
 window.logoutUser = logoutUser;
 
 })();
+</script> -->
+
+<script>
+(() => {
+
+  /* ================= BASIC SETUP ================= */
+  const params = new URLSearchParams(window.location.search);
+  const userId = params.get("user_id");
+  const token = localStorage.getItem("token");
+  const role = localStorage.getItem("role");
+
+  if (!token || role !== "admin") {
+    localStorage.clear();
+    window.location.href = "/login";
+    return;
+  }
+
+  if (!userId) {
+    alert("No user selected");
+    window.location.href = "/admin-dashboard";
+    return;
+  }
+
+  /* ================= STORAGE ================= */
+  const REVIEW_STORAGE_KEY = `docReviewState_${userId}`;
+  let docReviewState = JSON.parse(
+    localStorage.getItem(REVIEW_STORAGE_KEY) || "{}"
+  );
+
+  /* ================= TIMELINE ================= */
+  let timeline = 0;
+
+  function incrementTimeline() {
+    timeline++;
+    document.getElementById("timelineValue").textContent = timeline;
+  }
+
+  function decrementTimeline() {
+    if (timeline > 0) timeline--;
+    document.getElementById("timelineValue").textContent = timeline;
+  }
+
+  window.incrementTimeline = incrementTimeline;
+  window.decrementTimeline = decrementTimeline;
+
+  /* ================= LOAD USER + DOCS ================= */
+  async function loadUserDetails() {
+    const res = await fetch(`/api/auth/admin/users/${userId}/documents`, {
+      headers: { Authorization: "Bearer " + token }
+    });
+
+    if (res.status === 401 || res.status === 403) {
+      localStorage.clear();
+      window.location.href = "/login";
+      return;
+    }
+
+    const data = await res.json();
+    const user = data.user || {};
+    const docs = data.documents || [];
+
+    /* ---- User Info ---- */
+    document.getElementById("detailName").textContent = user.name || "—";
+    document.getElementById("detailRole").textContent = user.role || "—";
+    document.getElementById("detailEmail").textContent = user.email || "—";
+    document.getElementById("uploadStatus").textContent =
+      `${docs.length} uploaded`;
+
+    const tbody = document.getElementById("docTable");
+    const engagementBox = document.getElementById("engagementBox");
+    const engagementViewBtn = document.getElementById("engagementViewBtn");
+
+    tbody.innerHTML = "";
+    engagementBox.style.display = "none";
+
+    const normalDocs = [];
+
+    /* ---- Separate Engagement Letter ---- */
+    docs.forEach(d => {
+      if (d.doc_type === "EngagementLetter") {
+        engagementBox.style.display = "flex";
+        engagementBox.style.justifyContent = "space-between";
+        engagementBox.style.alignItems = "center";
+
+        engagementViewBtn.onclick = () => {
+          window.open(
+            `https://drive.google.com/file/d/${d.drive_file_id}/view`,
+            "_blank"
+          );
+        };
+      } else {
+        normalDocs.push(d);
+      }
+    });
+
+    /* ---- No Other Docs ---- */
+    if (!normalDocs.length) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="3" style="text-align:center;color:#6b7a86">
+            No other documents uploaded
+          </td>
+        </tr>`;
+      return;
+    }
+
+    /* ---- Render Other Docs ---- */
+    normalDocs.forEach((d, i) => {
+      const filename = d.filename;
+      const savedState = docReviewState[filename] || null;
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${i + 1}. ${filename}
+          <button class="view-btn">View</button>
+        </td>
+        <td><input type="checkbox" class="approve"></td>
+        <td><input type="checkbox" class="reject"></td>
+      `;
+
+      const approve = tr.querySelector(".approve");
+      const reject = tr.querySelector(".reject");
+
+      if (savedState === "approved") approve.checked = true;
+      if (savedState === "rejected") reject.checked = true;
+
+      approve.onchange = () => {
+        if (approve.checked) {
+          reject.checked = false;
+          docReviewState[filename] = "approved";
+        } else {
+          delete docReviewState[filename];
+        }
+        localStorage.setItem(
+          REVIEW_STORAGE_KEY,
+          JSON.stringify(docReviewState)
+        );
+      };
+
+      reject.onchange = () => {
+        if (reject.checked) {
+          approve.checked = false;
+          docReviewState[filename] = "rejected";
+        } else {
+          delete docReviewState[filename];
+        }
+        localStorage.setItem(
+          REVIEW_STORAGE_KEY,
+          JSON.stringify(docReviewState)
+        );
+      };
+
+      tr.querySelector(".view-btn").onclick = () => {
+        window.open(
+          `https://drive.google.com/file/d/${d.drive_file_id}/view`,
+          "_blank"
+        );
+      };
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  /* ================= SEND REVIEW EMAIL ================= */
+  async function approveForFiling() {
+    const approved = [];
+    const rejected = [];
+
+    Object.entries(docReviewState).forEach(([name, status]) => {
+      if (status === "approved") approved.push(name);
+      if (status === "rejected") rejected.push(name);
+    });
+
+    const payload = {
+      user_id: userId,
+      approved,
+      rejected,
+      timeline
+    };
+
+    const res = await fetch("/api/review/notify-user", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (res.ok) {
+      localStorage.removeItem(REVIEW_STORAGE_KEY);
+      docReviewState = {};
+      alert("Review email sent to user successfully");
+    } else {
+      alert("Failed to send email");
+    }
+  }
+
+  window.approveForFiling = approveForFiling;
+
+  /* ================= AUTO REFRESH ================= */
+  let refreshInterval = null;
+
+  document.addEventListener("DOMContentLoaded", () => {
+    loadUserDetails();
+    refreshInterval = setInterval(loadUserDetails, 5000);
+  });
+
+  window.addEventListener("beforeunload", () => {
+    if (refreshInterval) clearInterval(refreshInterval);
+  });
+
+  /* ================= NAV ================= */
+  function goBack() {
+    window.location.href = "/admin-dashboard";
+  }
+
+  function logoutUser() {
+    localStorage.clear();
+    window.location.href = "/login";
+  }
+
+  window.goBack = goBack;
+  window.logoutUser = logoutUser;
+
+})();
 </script>
+
 
 </body>
 </html>

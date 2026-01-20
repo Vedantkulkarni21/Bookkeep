@@ -71,6 +71,13 @@
 
     .small-muted{font-size:13px;color:#888;}
     .other-list{margin-top:8px;padding-left:4px;}
+    .other-list > div{
+  display: flex;
+  align-items: center;
+  gap: 12px;        /* space between text & button */
+  margin-bottom: 12px; /* space between rows */
+}
+
 
     .footer{background:#bee2fa;margin-top:40px;padding-top:30px;border-top:4px solid #0077c8;}
     .footer-top{width:90%;max-width:1200px;margin:20px auto;display:flex;justify-content:space-between;gap:30px;flex-wrap:wrap;}
@@ -145,7 +152,7 @@
       </div>
     </div>
     <div class="footer-bottom">
-      © 2024 Bookkeepro Business Solutions. All rights reserved.
+      © 2026 Bookkeepro Business Solutions. All rights reserved.
     </div>
   </footer>
 
@@ -158,145 +165,237 @@
     }
   </script>
 
-  <!-- UPLOAD LOGIC -->
   <script>
-    const docs = ["W2","1099"];
-    const uploadedFiles = {};
+/* ================= AUTH GUARD ================= */
 
-    const wrapper = document.getElementById("docWrapper");
+if (!token || role?.toLowerCase() !== "user") {
+  window.location.href = "/login";
+}
 
-    function renderDocs() {
-      wrapper.innerHTML = "";
-      docs.forEach((doc, i) => {
-        wrapper.innerHTML += `
-          <div class="upload-item">
-            <div class="upload-left">
-              <div class="doc-name">${i+1}. ${doc}</div>
-              <div id="status${i}" class="status"></div>
-            </div>
+/* ================= DOCUMENT CONFIG ================= */
+const docs = [
+  {
+    name: "s_corporation organizer 2025",
+    download: "./images/s_corporation_organizer_2025-business-doc-1.pdf"
+  },
+  { name: "W2", download: null },
+  { name: "1099", download: null }
+];
 
-            <div class="upload-actions">
-              <label class="upload-label" for="file${i}">Choose file</label>
-              <input id="file${i}" type="file" style="display:none">
+const uploadedFiles = {};
+const wrapper = document.getElementById("docWrapper");
+const extraList = document.getElementById("extraList");
+const extraStatus = document.getElementById("extraStatus");
 
-              <button id="view${i}" class="view-btn">View</button>
-              <button id="delete${i}" class="delete-btn">Delete</button>
-            </div>
-          </div>
-        `;
-      });
+/* ================= RENDER ================= */
+function renderDocs() {
+  wrapper.innerHTML = "";
 
-      docs.forEach((_,i)=>{
-        document.getElementById(`file${i}`).onchange = () => upload(i);
-        document.getElementById(`delete${i}`).onclick = () => deleteFile(i);
-        document.getElementById(`view${i}`).onclick   = () => viewFile(i);
-      });
-    }
+  docs.forEach((doc, i) => {
+    wrapper.innerHTML += `
+      <div class="upload-item">
+        <div class="upload-left">
+          <div class="doc-name">${i + 1}. ${doc.name}</div>
+          <div id="status${i}" class="status"></div>
+        </div>
 
-    async function upload(i){
-      const f = document.getElementById(`file${i}`).files[0];
-      if(!f) return;
+        <div class="upload-actions">
+          ${
+            doc.download
+              ? `<a class="view-btn-inline" href="${doc.download}" download>Download</a>`
+              : ``
+          }
 
-      const st = document.getElementById(`status${i}`);
-      const view = document.getElementById(`view${i}`);
-      const del  = document.getElementById(`delete${i}`);
+          <label class="upload-label" for="file${i}">Upload</label>
+          <input id="file${i}" type="file" hidden>
 
-      st.textContent = "Uploading...";
+          <button id="view${i}" class="view-btn">View</button>
+          <button id="delete${i}" class="delete-btn">Delete</button>
+        </div>
+      </div>
+    `;
+  });
 
-      const fd = new FormData();
-      fd.append("file", f);
+  docs.forEach((_, i) => {
+    document.getElementById(`file${i}`).onchange = () => upload(i);
+    document.getElementById(`view${i}`).onclick = () => viewFile(i);
+    document.getElementById(`delete${i}`).onclick = () => deleteFile(i);
+  });
+}
 
-      const res = await fetch("/api/upload/personal-document",{
-        method:"POST",
-        headers:{ Authorization:"Bearer "+token },
-        body:fd
-      });
+/* ================= UPLOAD ================= */
+async function upload(i) {
+  const input = document.getElementById(`file${i}`);
+  const file = input.files[0];
+  if (!file) return;
 
-      if(!res.ok){ st.textContent="Upload failed"; return; }
+  const status = document.getElementById(`status${i}`);
+  status.textContent = "Uploading...";
 
-      const d = await res.json();
+  const fd = new FormData();
+  fd.append("file", file);
+  fd.append("doc_type", docs[i].name);
 
-      uploadedFiles[i] = d.drive_file_id || d.file_id;
+  const res = await fetch("/api/upload/personal-document", {
+    method: "POST",
+    headers: { Authorization: "Bearer " + token },
+    body: fd
+  });
 
-      st.textContent = "Uploaded ✓";
-      view.style.display="inline-block";
-      del.style.display="inline-block";
-    }
+  if (!res.ok) {
+    status.textContent = "Upload failed";
+    return;
+  }
 
-    function viewFile(i){
-      const id = uploadedFiles[i];
-      if(!id) return alert("Preview unavailable");
+  const data = await res.json();
+  uploadedFiles[i] = data.drive_file_id || data.file_id;
 
-      window.open(`https://drive.google.com/file/d/${id}/view`,"_blank");
-    }
+  status.textContent = "Uploaded ✓";
+  document.getElementById(`view${i}`).style.display = "inline-block";
+  document.getElementById(`delete${i}`).style.display = "inline-block";
+}
 
-    async function deleteFile(i){
-      const id = uploadedFiles[i];
-      if(!id) return;
+/* ================= VIEW ================= */
+function viewFile(i) {
+  const id = uploadedFiles[i];
+  if (!id) return;
+  window.open(`https://drive.google.com/file/d/${id}/view`, "_blank");
+}
 
-      await fetch(`/api/upload/personal-document/${id}`,{
-        method:"DELETE",
-        headers:{ Authorization:"Bearer "+token }
-      });
+/* ================= DELETE (MAIN DOCS) ================= */
+async function deleteFile(i) {
+  const btn = document.getElementById(`delete${i}`);
+  const confirmed = confirm(
+    "Are you sure you want to delete this document?\nThis action cannot be undone."
+  );
+  if (!confirmed) return;
 
-      document.getElementById(`status${i}`).textContent="Deleted";
-      document.getElementById(`delete${i}`).style.display="none";
-      document.getElementById(`view${i}`).style.display="none";
-    }
+  btn.disabled = true;
 
-    // ---------- OTHER DOCUMENTS LIST + ALWAYS-VISIBLE VIEW ----------
+  const id = uploadedFiles[i];
+  if (!id) {
+    btn.disabled = false;
+    return;
+  }
 
-    const extraList = document.getElementById("extraList");
+  const res = await fetch(`/api/upload/personal-document/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: "Bearer " + token }
+  });
 
-    function addOtherDocItem(name,id){
-      const div = document.createElement("div");
-      div.className="small-muted";
-      div.innerHTML = `
-        • ${name}
-        <button class="view-btn-inline"
-          onclick="window.open('https://drive.google.com/file/d/${id}/view','_blank')">
-          View
-        </button>
-      `;
-      extraList.appendChild(div);
-    }
+  if (!res.ok) {
+    alert("Failed to delete document");
+    btn.disabled = false;
+    return;
+  }
 
-    document.getElementById("extraFile").addEventListener("change", async e=>{
-      const files = e.target.files;
-      const status = document.getElementById("extraStatus");
-      status.textContent="Uploading...";
+  delete uploadedFiles[i];
+  document.getElementById(`status${i}`).textContent = "Deleted";
+  document.getElementById(`view${i}`).style.display = "none";
+  btn.style.display = "none";
+  document.getElementById(`file${i}`).value = "";
 
-      for(const f of files){
-        const fd = new FormData();
-        fd.append("file", f);
+  alert("Document deleted successfully");
+}
 
-        const res = await fetch("/api/upload/personal-document",{
-          method:"POST",
-          headers:{ Authorization:"Bearer "+token },
-          body:fd
-        });
+/* ================= OTHER DOCUMENTS ================= */
+function addOtherDocItem(name, id) {
+  const div = document.createElement("div");
+  div.className = "small-muted";
+  div.setAttribute("data-id", id);
 
-        if(res.ok){
-          const d = await res.json();
-          addOtherDocItem(f.name, d.drive_file_id || d.file_id);
-        }
-      }
+  div.innerHTML = `
+    • ${name}
+    <button class="view-btn-inline"
+      onclick="window.open('https://drive.google.com/file/d/${id}/view','_blank')">
+      View
+    </button>
+    <button class="delete-btn"
+      style="display:inline-block"
+      onclick="deleteOtherDoc('${id}', this)">
+      Delete
+    </button>
+  `;
 
-      status.textContent="Uploaded ✓";
-      e.target.value="";
+  extraList.appendChild(div);
+}
+
+async function deleteOtherDoc(id, btn) {
+  const confirmed = confirm(
+    "Are you sure you want to delete this document?\nThis action cannot be undone."
+  );
+  if (!confirmed) return;
+
+  btn.disabled = true;
+
+  const res = await fetch(`/api/upload/personal-document/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: "Bearer " + token }
+  });
+
+  if (!res.ok) {
+    alert("Failed to delete document");
+    btn.disabled = false;
+    return;
+  }
+
+  btn.parentElement.remove();
+  alert("Document deleted successfully");
+}
+
+/* ================= OTHER UPLOAD ================= */
+document.getElementById("extraFile").addEventListener("change", async e => {
+  extraStatus.textContent = "Uploading...";
+
+  for (const file of e.target.files) {
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("doc_type", "Other");
+
+    const res = await fetch("/api/upload/personal-document", {
+      method: "POST",
+      headers: { Authorization: "Bearer " + token },
+      body: fd
     });
 
-    renderDocs();
-  </script>
-
-  <script>
-    function logoutUser(){
-      localStorage.removeItem("token");
-      localStorage.removeItem("role");
-      localStorage.removeItem("checklistDownloaded");
-      window.location.href="/login";
+    if (res.ok) {
+      const data = await res.json();
+      addOtherDocItem(file.name, data.drive_file_id || data.file_id);
     }
-  </script>
+  }
+
+  extraStatus.textContent = "Uploaded ✓";
+  e.target.value = "";
+});
+
+/* ================= LOAD FROM DB ================= */
+async function loadSavedDocuments() {
+  const res = await fetch("/api/upload/my-documents", {
+    headers: { Authorization: "Bearer " + token }
+  });
+
+  if (!res.ok) return;
+  const files = await res.json();
+
+  files.forEach(f => {
+    const index = docs.findIndex(d => d.name === f.doc_type);
+
+    if (index !== -1) {
+      uploadedFiles[index] = f.drive_file_id || f.file_id;
+      document.getElementById(`status${index}`).textContent = "Uploaded ✓";
+      document.getElementById(`view${index}`).style.display = "inline-block";
+      document.getElementById(`delete${index}`).style.display = "inline-block";
+    } else {
+      addOtherDocItem(f.filename, f.drive_file_id || f.file_id);
+    }
+  });
+}
+
+/* ================= INIT ================= */
+renderDocs();
+loadSavedDocuments();
+</script>
+
 
 </body>
 </html>

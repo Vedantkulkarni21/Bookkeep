@@ -18,3 +18,13 @@ class TokenResponse(BaseModel):
     token_type: str
     role: Optional[str] = None  # Add this
     user_id: Optional[int] = None  # Add this
+
+
+from pydantic import EmailStr
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str

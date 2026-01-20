@@ -6,7 +6,6 @@
   <title>BookKeepPro | Login</title>
 
   <style>
-    /* ⭐ your CSS kept exactly as-is */
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
@@ -17,6 +16,7 @@
       min-height: 100vh;
     }
 
+    /* HEADER */
     .header {
       background: #BEE2FA;
       padding: clamp(14px, 3vw, 22px);
@@ -40,6 +40,7 @@
 
     .btn-admin:hover { background:#e56e0d; }
 
+    /* LOGIN CARD */
     .container {
       max-width: 480px;
       margin: 50px auto;
@@ -51,7 +52,11 @@
       flex: 1;
     }
 
-    .container h2 { color:#333; margin-bottom:30px; font-size:24px; }
+    .container h2 {
+      color:#333;
+      margin-bottom:30px;
+      font-size:24px;
+    }
 
     input {
       width:100%;
@@ -62,16 +67,49 @@
       font-size:15px;
     }
 
-    .button-group { display:flex; gap:12px; margin-top:25px; }
-
-    .button {
-      flex:1; padding:14px; border:none; border-radius:8px;
-      font-size:16px; font-weight:600; cursor:pointer; transition:.3s;
+    input:focus {
+      outline:none;
+      border-color:#FF7F11;
+      box-shadow:0 0 5px rgba(255,127,17,0.3);
     }
 
-    .btn-user { background:#FF7F11; color:#fff; }
-    .btn-user:hover { background:#e76e00; }
+    .button-group {
+      display:flex;
+      gap:12px;
+      margin-top:25px;
+    }
 
+    .button {
+      flex:1;
+      padding:14px;
+      border:none;
+      border-radius:8px;
+      font-size:16px;
+      font-weight:600;
+      cursor:pointer;
+      transition:all .3s;
+    }
+
+    .btn-user {
+      background:#FF7F11;
+      color:#fff;
+    }
+
+    .btn-user:hover {
+      background:#e76e00;
+      transform:translateY(-2px);
+      box-shadow:0 4px 12px rgba(255,127,17,0.3);
+    }
+
+    .signup-link {
+      margin-top:15px;
+    }
+
+    .forgot-link {
+      margin-top:10px;
+    }
+
+    /* FOOTER */
     .footer {
       margin-top:auto;
       background:#BEE2FA;
@@ -80,15 +118,20 @@
     }
 
     .footer img { width:180px; }
+    .footer small { color:#555; font-size:13px; }
   </style>
 </head>
 
 <body>
 
+  <!-- HEADER -->
   <div class="header">
-    <img src="/images/bookkeeppro-logo.webp" onclick="window.location.href='/home'">
+    <img src="/images/bookkeeppro-logo.webp"
+         onclick="window.location.href='/home'"
+         alt="BookKeepPro">
   </div>
 
+  <!-- LOGIN CARD -->
   <div class="container">
     <h2>LOGIN TO YOUR ACCOUNT</h2>
 
@@ -102,14 +145,18 @@
     </div>
 
     <div class="signup-link">
-      Don't have an account? <a href="/signup">Sign Up</a>
+      Don’t have an account? <a href="/signup">Sign Up</a>
+    </div>
+
+    <div class="forgot-link">
+      <a href="/forgot-password">Forgot password?</a>
     </div>
   </div>
 
+  <!-- FOOTER -->
   <div class="footer">
-    <img src="/images/bookkeeppro-logo.webp">
-    <br>
-    <small>Copyright © 2024 Bookkeepro Business Solutions.</small>
+    <img src="/images/bookkeeppro-logo.webp" alt="logo"><br>
+    <small>Copyright © 2026 Bookkeepro Business Solutions.</small>
   </div>
 
 <script>
@@ -117,7 +164,8 @@ async function loginUser() {
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value;
 
-  if (!email || !password) return alert("Enter email and password");
+  if (!email || !password)
+    return alert("Enter email and password");
 
   const res = await fetch("/api/auth/login", {
     method:"POST",
@@ -126,7 +174,9 @@ async function loginUser() {
   });
 
   const data = await res.json();
-  if (!res.ok) return alert(data.detail || "Login failed");
+
+  if (!res.ok)
+    return alert(data.detail || "Login failed");
 
   if (data.role !== "user")
     return alert("Please login from Admin page for admin accounts");

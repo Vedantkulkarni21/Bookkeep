@@ -11,21 +11,24 @@
     *{margin:0;padding:0;box-sizing:border-box;font-family:"Poppins",sans-serif;}
     body{background:#f5f5f5;color:#222;}
 
-    .header { background:#BEE2FA; padding:clamp(14px,3vw,22px); }
-    .header img { width:clamp(160px,40vw,240px); cursor:pointer; }
+    .header{background:#BEE2FA;padding:clamp(14px,3vw,22px);}
+    .header img{width:clamp(160px,40vw,240px);cursor:pointer;}
 
     .logout-btn{
       padding:10px 16px;background:#FF7F11;color:#fff;border-radius:25px;
       border:none;font-weight:600;cursor:pointer;float:right;
     }
-    .logout-btn:hover{background:#e56e0d;}
 
     .container{
       max-width:1000px;margin:90px auto 60px;background:#fff;
-      padding:28px;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.06);
+      padding:28px;border-radius:12px;
+      box-shadow:0 6px 20px rgba(0,0,0,.06);
     }
 
-    .page-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+    .page-title{
+      display:flex;justify-content:space-between;align-items:center;
+      margin-bottom:18px;
+    }
     .page-title h2{font-size:20px;color:#0077c8;}
     .helper{font-size:14px;color:#666;}
 
@@ -33,7 +36,8 @@
 
     .upload-item{
       display:flex;justify-content:space-between;align-items:center;
-      padding:12px;border-radius:10px;border:1px solid #e6eef6;background:#fbfdff;
+      padding:12px;border-radius:10px;
+      border:1px solid #e6eef6;background:#fbfdff;
     }
 
     .upload-left{display:flex;flex-direction:column;gap:6px;}
@@ -43,37 +47,36 @@
     .upload-actions{display:flex;gap:10px;align-items:center;}
 
     .upload-label{
-      padding:8px 12px;border-radius:8px;background:#0077c8;
-      color:#fff;cursor:pointer;
+      padding:8px 12px;border-radius:8px;
+      background:#0077c8;color:#fff;cursor:pointer;
     }
 
     .delete-btn{
-      padding:8px 10px;border-radius:8px;background:#fff;
-      color:#ff6b6b;border:1px solid #ffd0d0;display:none;cursor:pointer;
+      padding:8px 10px;border-radius:8px;
+      background:#fff;color:#ff6b6b;
+      border:1px solid #ffd0d0;display:none;cursor:pointer;
     }
 
     .view-btn{
-      padding:8px 10px;border-radius:20px;background:#2da9ff;
-      color:#fff;border:none;font-size:12px;display:none;cursor:pointer;
+      padding:8px 10px;border-radius:20px;
+      background:#2da9ff;color:#fff;
+      border:none;font-size:12px;display:none;cursor:pointer;
     }
 
-    /* always-visible view button for Other Docs */
     .view-btn-inline{
-      padding:8px 10px;
-      border-radius:20px;
-      background:#2da9ff;
-      color:#fff;
-      border:none;
-      font-size:12px;
-      cursor:pointer;
-      display:inline-block;
+      padding:8px 10px;border-radius:20px;
+      background:#2da9ff;color:#fff;
+      border:none;font-size:12px;cursor:pointer;
     }
 
     .small-muted{font-size:13px;color:#888;}
     .other-list{margin-top:8px;padding-left:4px;}
+    .other-list > div{
+      display:flex;align-items:center;gap:12px;margin-bottom:12px;
+    }
 
     .footer{background:#bee2fa;margin-top:40px;padding-top:30px;border-top:4px solid #0077c8;}
-    .footer-top{width:90%;max-width:1200px;margin:20px auto;display:flex;justify-content:space-between;flex-wrap:wrap;gap:30px;}
+    .footer-top{width:90%;max-width:1200px;margin:20px auto;display:flex;justify-content:space-between;gap:30px;flex-wrap:wrap;}
     .footer-logo{width:220px;}
     .footer-bottom{background:#a9d9f8;text-align:center;padding:12px;font-size:14px;color:#444;}
   </style>
@@ -81,233 +84,346 @@
 
 <body>
 
-  <div class="header">
-    <img src="/images/bookkeeppro-logo.webp" onclick="window.location.href='/home'" alt="BookKeepPro"/>
-    <button class="logout-btn" onclick="logoutUser()">Logout</button>
+<div class="header">
+  <img src="/images/bookkeeppro-logo.webp" onclick="window.location.href='/home'">
+  <button class="logout-btn" onclick="logoutUser()">Logout</button>
+</div>
+
+<main class="container">
+
+  <div class="page-title">
+    <div>
+      <h2>Upload Business Documents</h2>
+      <div class="helper small-muted">
+        Upload required documents related to your business.
+      </div>
+    </div>
+    <div class="helper">Allowed: PDF, JPG, PNG · Max 10MB</div>
   </div>
 
-  <main class="container">
+  <div id="docWrapper" class="upload-list"></div>
 
-    <div class="page-title">
-      <div>
-        <h2>Upload Business Documents</h2>
-        <div class="helper small-muted">
-          Upload required documents for your business. Files are stored in Google Drive.
-        </div>
+  <div style="margin-top:30px;">
+    <p class="small-muted" style="margin-bottom:12px;">
+      Upload any additional business documents.
+    </p>
+
+    <div class="upload-item">
+      <div class="upload-left">
+        <div class="doc-name">Other Documents</div>
+        <div id="extraStatus" class="status small-muted"></div>
+        <div id="extraList" class="other-list"></div>
       </div>
-      <div class="helper">Allowed types: PDF, JPG, PNG · Max 10MB</div>
+
+      <div class="upload-actions">
+        <label class="upload-label" for="extraFile">Choose files</label>
+        <input id="extraFile" type="file" multiple hidden>
+      </div>
     </div>
+  </div>
 
-    <div id="docWrapper" class="upload-list"></div>
+  <div style="margin-top:18px;">
+    <button onclick="window.location.href='/dashboard'"
+      style="padding:10px 14px;border-radius:8px;border:1px solid #ddd;background:#fff;">
+      ← Back to Dashboard
+    </button>
+  </div>
 
-    <div style="margin-top:30px;">
-      <p class="small-muted" style="margin-bottom:12px;">
-        Upload any additional documents here. All file formats are allowed.
-      </p>
+</main>
 
+<footer class="footer">
+  <div class="footer-top">
+    <div>
+      <img src="/images/bookkeeppro-logo.webp" class="footer-logo" />
+      <p>Your Globally Trusted Bookkeeping Partner.</p>
+    </div>
+    <div>
+      <h4 style="color:#0077c8">Quick Links</h4>
+      <a href="/home">Home</a><br/>
+      <a href="/dashboard">Dashboard</a>
+    </div>
+    <div>
+      <h4 style="color:#0077c8">Contact</h4>
+      <p>info@bookkeepro.net</p>
+      <p>+1 469-796-6151</p>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    © 2026 Bookkeepro Business Solutions. All rights reserved.
+  </div>
+</footer>
+
+<script>
+const token = localStorage.getItem("token");
+const role = localStorage.getItem("role");
+if (!token || role?.toLowerCase() !== "user") {
+  window.location.href = "/login";
+}
+
+/* 🔹 BUSINESS DOCUMENT LIST
+   → Dummy doc added FIRST
+   → Original 4 untouched
+*/
+const docs = [
+{
+    name: "Individual taxpayer organizer sole proprietorship rental 2025",
+    download: "./images/individual_taxpayer_organizer_sole_proprietorship_rental_2025-doc-1.pdf"
+  },
+  {
+    name: "llc tax organizer 2025",
+    download: "./images/llc_tax_organizer_2025-personal-doc-2.pdf"
+  },
+  {
+    name: "Partnership tax organizer 2025",
+    download: "./images/partnership_tax_organizer_2025-persoal-doc-3.pdf"
+  },  
+  {
+    name: "Certificate of Formation",
+    download: null
+  },
+  {
+    name: "Employer Identification Number (EIN)",
+    download: null
+  },
+  {
+    name: "Annual Financial Statements",
+    download: null
+  },
+  {
+    name: "1099",
+    download: null
+  }
+];
+
+const uploadedFiles = {};
+const wrapper = document.getElementById("docWrapper");
+const extraList = document.getElementById("extraList");
+const extraStatus = document.getElementById("extraStatus");
+
+/* ---------------- RENDER ---------------- */
+function renderDocs(){
+  wrapper.innerHTML = "";
+
+  docs.forEach((doc,i)=>{
+    wrapper.innerHTML += `
       <div class="upload-item">
         <div class="upload-left">
-          <div class="doc-name">Other Documents</div>
-          <div id="extraStatus" class="status small-muted"></div>
-
-          <div id="extraList" class="other-list"></div>
+          <div class="doc-name">${i+1}. ${doc.name}</div>
+          <div id="status${i}" class="status"></div>
         </div>
 
         <div class="upload-actions">
-          <label class="upload-label" for="extraFile">Choose files</label>
-          <input id="extraFile" type="file" multiple style="display:none">
+          ${
+            doc.download
+              ? `<a class="view-btn-inline" href="${doc.download}" download>Download</a>`
+              : ``
+          }
+
+          <label class="upload-label" for="file${i}">Upload</label>
+          <input id="file${i}" type="file" hidden>
+
+          <button id="view${i}" class="view-btn">View</button>
+          <button id="delete${i}" class="delete-btn">Delete</button>
         </div>
       </div>
-    </div>
+    `;
+  });
 
-    <div style="margin-top:18px;">
-      <button onclick="window.location.href='/dashboard'"
-        style="padding:10px 14px;border-radius:8px;border:1px solid #ddd;background:#fff;">
-        Back to Dashboard
-      </button>
-    </div>
+  docs.forEach((_,i)=>{
+    document.getElementById(`file${i}`).onchange = ()=>upload(i);
+    document.getElementById(`view${i}`).onclick = ()=>viewFile(i);
+    document.getElementById(`delete${i}`).onclick = ()=>deleteFile(i);
+  });
+}
 
-  </main>
+/* ---------------- UPLOAD ---------------- */
+async function upload(i){
+  const f = document.getElementById(`file${i}`).files[0];
+  if(!f) return;
 
-  <footer class="footer">
-    <div class="footer-top">
-      <div>
-        <img src="/images/bookkeeppro-logo.webp" class="footer-logo"/>
-        <p>Your Globally Trusted Bookkeeping Partner.</p>
-      </div>
+  const st = document.getElementById(`status${i}`);
+  st.textContent="Uploading...";
 
-      <div>
-        <h4 style="color:#0077c8">Quick Links</h4>
-        <a href="/home">Home</a><br>
-        <a href="/dashboard">Dashboard</a>
-      </div>
+  const fd = new FormData();
+  fd.append("file", f);
+  fd.append("doc_type", docs[i].name);
 
-      <div>
-        <h4 style="color:#0077c8">Contact</h4>
-        <p>info@bookkeepro.net</p>
-        <p>+1469-796-6151</p>
-      </div>
-    </div>
+  const res = await fetch("/api/upload/business-document",{
+    method:"POST",
+    headers:{ Authorization:"Bearer "+token },
+    body:fd
+  });
 
-    <div class="footer-bottom">
-      © 2024 Bookkeepro Business Solutions. All rights reserved.
-    </div>
-  </footer>
+  if(!res.ok){ st.textContent="Upload failed"; return; }
 
-  <!-- AUTH GUARD -->
-  <script>
-    const token = localStorage.getItem("token");
-    const role = localStorage.getItem("role");
-    if (!token || role?.toLowerCase() !== "user") {
-      window.location.href = "/login";
-    }
-  </script>
+  const d = await res.json();
+  uploadedFiles[i] = d.drive_file_id || d.file_id;
 
-  <!-- UPLOAD LOGIC -->
-  <script>
-    const docs = [
-      "Business Registration Certificate",
-      "Articles of Incorporation",
-      "Employer Identification Number (EIN)",
-      "Annual Financial Statements",
-      "Proof of Address",
-      "Bank Verification Letter"
-    ];
+  st.textContent="Uploaded ✓";
+  document.getElementById(`view${i}`).style.display="inline-block";
+  document.getElementById(`delete${i}`).style.display="inline-block";
+}
 
-    const uploadedFiles = {};
-    const wrapper = document.getElementById("docWrapper");
+function viewFile(i){
+  window.open(`https://drive.google.com/file/d/${uploadedFiles[i]}/view`,"_blank");
+}
 
-    function renderDocs(){
-      wrapper.innerHTML = "";
-      docs.forEach((doc,i)=>{
-        wrapper.innerHTML += `
-          <div class="upload-item">
-            <div class="upload-left">
-              <div class="doc-name">${i+1}. ${doc}</div>
-              <div id="status${i}" class="status"></div>
-            </div>
+// async function deleteFile(i){
+//   const id = uploadedFiles[i];
+//   await fetch(`/api/upload/business-document/${id}`,{
+//     method:"DELETE",
+//     headers:{ Authorization:"Bearer "+token }
+//   });
 
-            <div class="upload-actions">
-              <label class="upload-label" for="file${i}">Choose file</label>
-              <input id="file${i}" type="file" style="display:none">
+//   document.getElementById(`status${i}`).textContent="Deleted";
+//   document.getElementById(`view${i}`).style.display="none";
+//   document.getElementById(`delete${i}`).style.display="none";
+// }
 
-              <button id="view${i}" class="view-btn">View</button>
-              <button id="delete${i}" class="delete-btn">Delete</button>
-            </div>
-          </div>
-        `;
-      });
+async function deleteFile(i){
+  const confirmed = confirm(
+    "Are you sure you want to delete this document?\nThis action cannot be undone."
+  );
+  if (!confirmed) {
+    btn?.setAttribute("disabled", true);
+    return;
+  }
+  const id = uploadedFiles[i];
+  if (!id) return;
+  
+  const res = await fetch(`/api/upload/business-document/${id}`,{
+    method:"DELETE",
+    headers:{ Authorization:"Bearer "+token }
+  });
 
-      docs.forEach((_,i)=>{
-        document.getElementById(`file${i}`).onchange = () => upload(i);
-        document.getElementById(`view${i}`).onclick = () => viewFile(i);
-        document.getElementById(`delete${i}`).onclick = () => deleteFile(i);
-      });
-    }
+  if (!res.ok) {
+    alert("Failed to delete document");
+    return;
+  }
 
-    async function upload(i){
-      const f = document.getElementById(`file${i}`).files[0];
-      if(!f) return;
+  // Reset UI
+  delete uploadedFiles[i];
+  document.getElementById(`status${i}`).textContent = "Deleted";
+  document.getElementById(`view${i}`).style.display = "none";
+  document.getElementById(`delete${i}`).style.display = "none";
+  document.getElementById(`file${i}`).value = "";
 
-      const st = document.getElementById(`status${i}`);
-      const view = document.getElementById(`view${i}`);
-      const del  = document.getElementById(`delete${i}`);
+  alert("Document deleted successfully");
+}
 
-      st.textContent = "Uploading...";
 
-      const fd = new FormData();
-      fd.append("file", f);
+/* ---------------- OTHER DOCS ---------------- */
+function addOtherDoc(name, id){
+  const div = document.createElement("div");
+  div.className = "small-muted";
+  div.setAttribute("data-id", id);
 
-      const res = await fetch("/api/upload/business-document",{
-        method:"POST",
-        headers:{ Authorization:"Bearer "+token },
-        body:fd
-      });
+  div.innerHTML = `
+    • ${name}
+    <button class="view-btn-inline"
+      onclick="window.open('https://drive.google.com/file/d/${id}/view','_blank')">
+      View
+    </button>
+    <button class="delete-btn"
+      style="display:inline-block"
+      onclick="deleteOtherDoc('${id}', this)">
+      Delete
+    </button>
+  `;
 
-      if(!res.ok){ st.textContent="Upload failed"; return; }
+  extraList.appendChild(div);
+}
 
-      const d = await res.json();
+// async function deleteOtherDoc(id, btn){
+//   await fetch(`/api/upload/business-document/${id}`, {
+//     method: "DELETE",
+//     headers: { Authorization: "Bearer " + token }
+//   });
 
-      uploadedFiles[i] = d.drive_file_id || d.file_id;
+//   // remove row from UI
+//   btn.parentElement.remove();
+// }
 
-      st.textContent = "Uploaded ✓";
-      view.style.display="inline-block";
-      del.style.display="inline-block";
-    }
 
-    function viewFile(i){
-      const id = uploadedFiles[i];
-      if(!id) return alert("Preview unavailable");
-      window.open(`https://drive.google.com/file/d/${id}/view`,"_blank");
-    }
+async function deleteOtherDoc(id, btn){
+  const confirmed = confirm(
+    "Are you sure you want to delete this document?\nThis action cannot be undone."
+  );
+  if (!confirmed) {
+  return;
+}
 
-    async function deleteFile(i){
-      const id = uploadedFiles[i];
-      if(!id) return;
+btn?.setAttribute("disabled", true);
+  const res = await fetch(`/api/upload/business-document/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: "Bearer " + token }
+  });
 
-      await fetch(`/api/upload/business-document/${id}`,{
-        method:"DELETE",
-        headers:{ Authorization:"Bearer "+token }
-      });
+  if (!res.ok) {
+    alert("Failed to delete document");
+    return;
+  }
 
-      document.getElementById(`status${i}`).textContent="Deleted";
-      document.getElementById(`delete${i}`).style.display="none";
-      document.getElementById(`view${i}`).style.display="none";
-    }
+  // Remove from UI
+  btn.parentElement.remove();
+  alert("Document deleted successfully");
+}
 
-    // ---------- OTHER DOCUMENTS LIST + VIEW ----------
 
-    const extraList = document.getElementById("extraList");
 
-    function addOtherDoc(name,id){
-      const div = document.createElement("div");
-      div.className="small-muted";
-      div.innerHTML = `
-        • ${name}
-        <button class="view-btn-inline"
-          onclick="window.open('https://drive.google.com/file/d/${id}/view','_blank')">
-          View
-        </button>
-      `;
-      extraList.appendChild(div);
-    }
+document.getElementById("extraFile").addEventListener("change",async e=>{
+  extraStatus.textContent="Uploading...";
+  for(const f of e.target.files){
+    const fd=new FormData();
+    fd.append("file",f);
+    fd.append("doc_type","Other");
 
-    document.getElementById("extraFile").addEventListener("change", async e=>{
-      const files = e.target.files;
-      const status = document.getElementById("extraStatus");
-      status.textContent="Uploading...";
-
-      for(const f of files){
-        const fd = new FormData();
-        fd.append("file", f);
-
-        const res = await fetch("/api/upload/business-document",{
-          method:"POST",
-          headers:{ Authorization:"Bearer "+token },
-          body:fd
-        });
-
-        if(res.ok){
-          const d = await res.json();
-          addOtherDoc(f.name, d.drive_file_id || d.file_id);
-        }
-      }
-
-      status.textContent="Uploaded ✓";
-      e.target.value="";
+    const res=await fetch("/api/upload/business-document",{
+      method:"POST",
+      headers:{ Authorization:"Bearer "+token },
+      body:fd
     });
 
-    renderDocs();
-  </script>
-
-  <script>
-    function logoutUser(){
-      localStorage.removeItem("token");
-      localStorage.removeItem("role");
-      localStorage.removeItem("checklistDownloaded");
-      window.location.href="/login";
+    if(res.ok){
+      const d=await res.json();
+      addOtherDoc(f.name,d.drive_file_id||d.file_id);
     }
-  </script>
+  }
+  extraStatus.textContent="Uploaded ✓";
+  e.target.value="";
+});
+
+/* ---------------- LOAD SAVED ---------------- */
+async function loadSavedBusinessDocuments(){
+  const res = await fetch("/api/upload/my-documents",{
+    headers:{ Authorization:"Bearer "+token }
+  });
+  if(!res.ok) return;
+
+  const files = await res.json();
+
+  files.forEach(f=>{
+    const index = docs.findIndex(d=>d.name===f.doc_type);
+
+    if(index!==-1){
+      uploadedFiles[index]=f.drive_file_id||f.file_id;
+      document.getElementById(`status${index}`).textContent="Uploaded ✓";
+      document.getElementById(`view${index}`).style.display="inline-block";
+      document.getElementById(`delete${index}`).style.display="inline-block";
+    } else {
+      addOtherDoc(f.filename,f.drive_file_id);
+    }
+  });
+}
+
+renderDocs();
+loadSavedBusinessDocuments();
+
+function logoutUser(){
+  localStorage.clear();
+  window.location.href="/login";
+}
+</script>
 
 </body>
 </html>

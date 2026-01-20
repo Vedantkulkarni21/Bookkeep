@@ -26,12 +26,19 @@ def authenticate_user(db: Session, email: str, password: str):
         return None
     return user
 
-def create_uploaded_file(db: Session, filename: str, drive_file_id: str, content_type: str, owner_id: int):
-    uf = UploadedFile(filename=filename, drive_file_id=drive_file_id, content_type=content_type, owner_id=owner_id)
+def create_uploaded_file(db, filename, drive_file_id, content_type, doc_type, owner_id):
+    uf = UploadedFile(
+        filename=filename,
+        drive_file_id=drive_file_id,
+        content_type=content_type,
+        doc_type=doc_type,
+        owner_id=owner_id
+    )
     db.add(uf)
     db.commit()
     db.refresh(uf)
     return uf
+
 
 def delete_uploaded_file(db: Session, drive_file_id: str, owner_id: int):
     q = db.query(UploadedFile).filter(UploadedFile.drive_file_id == drive_file_id, UploadedFile.owner_id == owner_id)
@@ -60,3 +67,10 @@ def get_user_by_id(db: Session, user_id: int):
     return db.query(User).filter(User.id == user_id).first()
 
 # ...existing code...
+
+
+def update_user_password(db, user, hashed_password: str):
+    user.hashed_password = hashed_password
+    db.add(user)
+    db.commit()
+    db.refresh(user)
