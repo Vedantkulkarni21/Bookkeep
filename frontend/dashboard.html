@@ -12,278 +12,170 @@
 
   <style>
     * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: "Poppins", sans-serif;
-}
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Poppins", sans-serif;
+    }
 
-html {
-  font-size: clamp(14px, 1vw, 16px);
-}
+    html {
+      font-size: clamp(14px, 1vw, 16px);
+    }
 
-body {
-  background: #f5f5f5;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
+    body {
+      background: #f5f5f5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
 
-/* HEADER */
-.header {
-  background: #BEE2FA;
-  padding: clamp(14px, 3vw, 22px);
-}
+    /* HEADER */
+    .header {
+      background: #BEE2FA;
+      padding: clamp(14px, 3vw, 22px);
+    }
 
-.header img {
-  width: clamp(160px, 40vw, 240px);
-  cursor: pointer;
-}
+    .header img {
+      width: clamp(160px, 40vw, 240px);
+      cursor: pointer;
+    }
 
-/* LOGOUT BUTTON */
-.logout-btn {
-  padding: 10px 16px;
-  background: #FF7F11;
-  color: #fff;
-  border-radius: 25px;
-  border: none;
-  font-weight: 600;
-  cursor: pointer;
-  float: right;
-}
+    .logout-btn {
+      padding: 10px 16px;
+      background: #FF7F11;
+      color: #fff;
+      border-radius: 25px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      float: right;
+    }
 
-.logout-btn:hover {
-  background: #e56e0d;
-}
+    .logout-btn:hover {
+      background: #e56e0d;
+    }
 
-/* MAIN CONTAINER */
-.container {
-  width: min(100%, 900px);
-  margin: clamp(24px, 5vw, 50px) auto;
-  background: #fff;
-  padding: clamp(20px, 5vw, 36px);
-  border-radius: 16px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.06);
-}
+    /* MAIN CONTAINER */
+    .container {
+      width: min(100%, 900px);
+      margin: clamp(24px, 5vw, 50px) auto;
+      margin-top: 90px;
+      background: #fff;
+      padding: clamp(20px, 5vw, 36px);
+      border-radius: 16px;
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.06);
+    }
 
-/* HEADINGS */
-h2 {
-  color: #0b2540;
-  margin-bottom: 8px;
-  font-size: clamp(18px, 2.5vw, 22px);
-}
+    h2 {
+      color: #0b2540;
+      margin-bottom: 8px;
+      font-size: clamp(18px, 2.5vw, 22px);
+    }
 
-.subtitle {
-  color: #6b7a86;
-  font-size: clamp(13px, 1.8vw, 14px);
-  margin-bottom: 24px;
-}
+    .subtitle {
+      color: #6b7a86;
+      font-size: clamp(13px, 1.8vw, 14px);
+      margin-bottom: 24px;
+    }
 
-/* DOWNLOAD BOX */
-.download-box {
-  background: #f3f8fc;
-  border: 1px solid #dceaf5;
-  padding: clamp(16px, 4vw, 22px);
-  border-radius: 14px;
-  margin-bottom: 30px;
-  text-align: center;
-}
+    /* DOWNLOAD BOX */
+    .download-box {
+      background: #f3f8fc;
+      border: 1px solid #dceaf5;
+      padding: clamp(16px, 4vw, 22px);
+      border-radius: 14px;
+      margin-bottom: 30px;
+      text-align: center;
+      margin: 30px auto;
+      width: 70%;
+    }
 
-.download-box p {
-  margin-bottom: 14px;
-  color: #333;
-  font-size: clamp(13px, 1.8vw, 14px);
-}
+    .download-box p {
+      margin-bottom: 16px;
+      color: #333;
+      font-size: clamp(13px, 1.8vw, 14px);
+    }
 
-.download-btn {
-  padding: 12px 20px;
-  border-radius: 12px;
-  background: #FF7F11;
-  color: #fff;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: clamp(13px, 1.8vw, 14px);
-}
+    .admin-box {
+      background: #f3f8fc;
+      border: 1px solid #dceaf5;
+      padding: clamp(16px, 4vw, 22px);
+      border-radius: 14px;
+      text-align: center;
+      /* margin: 10px auto; */
+      width: 70%;
+    }
 
-/* ACTION BUTTONS */
-.actions {
-  display: flex;
-  gap: 20px;
-  justify-content: center;
-  margin-top: 20px;
-  /* flex-wrap: wrap; */
-}
+    .download-pill {
+      padding: 12px 22px;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      border: 1px solid #b6dcff;
+      background: #3081d2;
+      color: white;
+      transition: background 0.2s ease;
+    }
 
-.action-btn {
-  width: min(100%, 280px);
-  padding: 16px;
-  border-radius: 16px;
-  border: none;
-  font-size: clamp(14px, 2vw, 15px);
-  font-weight: 600;
-  cursor: not-allowed;
-  opacity: 0.5;
-}
+    .download-pill:hover {
+      background: #256bb3;
+    }
 
-.action-btn.enabled {
-  cursor: pointer;
-  opacity: 1;
-}
+    /* ACTION BUTTONS (ALWAYS ACTIVE) */
+    .actions {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      margin-top: 20px;
+    }
 
-.personal {
-  background: #0077c8;
-  color: white;
-}
+    .action-btn {
+      width: min(100%, 280px);
+      padding: 16px;
+      border-radius: 16px;
+      border: none;
+      font-size: clamp(14px, 2vw, 15px);
+      font-weight: 600;
+      cursor: pointer;      /* ✅ FIXED */
+      opacity: 1;           /* ✅ FIXED */
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
 
-.business {
-  background: #2D5A6B;
-  color: white;
-}
+    .action-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+    }
 
-/* FOOTER */
-.footer {
-  margin-top: auto;
-  background: #BEE2FA;
-  padding: clamp(14px, 3vw, 18px);
-  text-align: center;
-  font-size: clamp(12px, 1.8vw, 14px);
-  color: #444;
-}
+    .personal {
+      background: #0077c8;
+      color: white;
+    }
 
-/* MOBILE TWEAKS */
-@media (max-width: 480px) {
-  .actions {
-    flex-direction: column;
-    align-items: stretch;
-  }
+    .business {
+      background: #2D5A6B;
+      color: white;
+    }
 
-  .download-btn {
-    width: 100%;
-  }
-}
+    /* FOOTER */
+    .footer {
+      margin-top: auto;
+      background: #BEE2FA;
+      padding: clamp(14px, 3vw, 18px);
+      text-align: center;
+      font-size: clamp(12px, 1.8vw, 14px);
+      color: #444;
+    }
 
+    @media (max-width: 480px) {
+      .actions {
+        flex-direction: column;
+      }
 
-
-.download-actions {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.upload-btn {
-  padding: 12px 20px;
-  border-radius: 12px;
-  background: #0077c8;
-  color: #fff;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-.upload-btn input {
-  display: none;
-}
-
-.file-actions {
-  display: none;
-  margin-top: 14px;
-  justify-content: center;
-  gap: 12px;
-}
-
-.file-actions button {
-  padding: 10px 16px;
-  border-radius: 10px;
-  border: none;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.view-btn {
-  background: #2D5A6B;
-  color: white;
-}
-
-.delete-btn {
-  background: #d9534f;
-  color: white;
-}
-
-/* ===== ACTION ROW ===== */
-.action-row {
-  display: flex;
-  gap: 14px;
-  justify-content: center;
-  align-items: center;
-  flex-wrap: nowrap;        /* 🔥 force single row */
-  white-space: nowrap;     /* 🔥 prevent wrapping */
-  margin-top: 15px;
-}
-
-
-/* ===== PILL BUTTON BASE ===== */
-.pill {
-  padding: 10px 18px;
-  border-radius: 999px;
-  font-weight: 600;
-  font-size: 14px;
-  cursor: pointer;
-  border: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 90px;
-  transition: all 0.2s ease;
-  
-}
-
-.pill input {
-  display: none;
-}
-
-/* ===== INDIVIDUAL STYLES ===== */
-.download-pill {
-  background: #3081d2;
-  color: #ffffff;
-  border: 1px solid #b6dcff;
-}
-
-.download-pill:hover {
-  background: #d6ecff;
-}
-
-.upload-pill {
-  background: #FF7F11;
-  color: white;
-}
-
-.upload-pill:hover {
-  background: #095fb4;
-}
-
-.view-pill {
-  background: #2da9ff;
-  color: white;
-}
-
-.view-pill:hover {
-  background: #1b96ea;
-}
-
-.delete-pill {
-  background: white;
-  color: #e53935;
-  border: 1px solid #f5b5b5;
-}
-
-.delete-pill:hover {
-  background: #ffecec;
-}
-
-
-
+      .download-pill {
+        width: 100%;
+      }
+    }
   </style>
 </head>
 
@@ -291,7 +183,6 @@ h2 {
 
   <!-- Header -->
   <div class="header">
-
     <img
       src="/images/bookkeeppro-logo.webp"
       onclick="window.location.href='/home'"
@@ -301,9 +192,7 @@ h2 {
     <button class="logout-btn" onclick="logoutUser()">
       Logout
     </button>
-
   </div>
-
 
   <!-- Main -->
   <div class="container">
@@ -312,221 +201,197 @@ h2 {
       Please download the document before proceeding.
     </div>
 
-    <!-- Download Section -->
-    <!-- <div class="download-box">
-  <p>
-    Download the document checklist and guidelines.  
-    You must review this before uploading documents.
-  </p>
+    <div class="download-box">
+      <p>Download the General Engagement Letter before proceeding.</p>
 
-  <div class="download-center">
-    <a
-      href="./images/general_engagement_letter_2025-1 - common.pdf"
-      download
-      onclick="markDownloaded()"
-    >
-      <button class="download-btn engagement-letter">
-        Download General Engagement Letter
-      </button>
-    </a>
-  </div>
-</div> -->
+      <a href="./images/general_engagement_letter_2025-1 - common.pdf" download>
+        <button class="download-pill">
+          Download General Engagement Letter
+        </button>
+      </a>
+    </div>
 
-<div class="download-box">
-  <p>
-    Download the document checklist before proceeding.  
-    You must review this before uploading documents.
-  </p>
-
-  <div class="action-row">
-  <a href="./images/general_engagement_letter_2025-1 - common.pdf" download>
-    <button class="pill download-pill">Download general engagement letter</button>
-  </a>
-
-  <label class="pill upload-pill">
-    Upload
-    <input type="file" accept=".pdf" onchange="handleUpload(event)" />
-  </label>
-
-  <button class="pill view-pill" id="viewBtn" onclick="viewFile()" style="display:none;">
-    View
-  </button>
-
-  <button class="pill delete-pill" id="deleteBtn" onclick="deleteFile()" style="display:none;">
-    Delete
-  </button>
-</div>
-
-</div>
-
-
-
-    <!-- Actions -->
     <div class="actions">
-      <button
-        id="personalBtn"
-        class="action-btn personal"
-        onclick="goPersonal()"
-        disabled
-      >
+      <button class="action-btn personal" onclick="goPersonal()">
         Personal Documents
       </button>
 
-      <button
-        id="businessBtn"
-        class="action-btn business"
-        onclick="goBusiness()"
-        disabled
-      >
+      <button class="action-btn business" onclick="goBusiness()">
         Business Documents
       </button>
     </div>
   </div>
+
+  
+  <div
+  id="adminDocsBox"
+  class="admin-box"
+  style="margin:10px auto;text-align:left; margin-bottom: 50px;"
+>
+
+  <p style="text-align:center">
+    <b>Documents uploaded by Admin</b>
+  </p>
+
+  <div id="adminDocsList"></div>
+</div>
+
+
 
   <!-- Footer -->
   <div class="footer">
     © 2026 BookKeepro Business Solutions. All rights reserved.
   </div>
 
-<script>
-/* ================= AUTH GUARD ================= */
-const token = localStorage.getItem("token");
-const role = localStorage.getItem("role");
+  <script>
+    /* ================= AUTH GUARD ================= */
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
 
-if (!token || role?.toLowerCase() !== "user") {
-  window.location.href = "/login";
-}
-
-const personalBtn = document.getElementById("personalBtn");
-const businessBtn = document.getElementById("businessBtn");
-// const fileActions = document.getElementById("fileActions");
-
-let engagementFileId = null;
-
-/* ================= NAV ================= */
-function goPersonal() {
-  window.location.href = "/upload-personal";
-}
-
-function goBusiness() {
-  window.location.href = "/upload-business";
-}
-
-function logoutUser() {
-  localStorage.clear();
-  window.location.href = "/login";
-}
-
-/* ================= UPLOAD ================= */
-async function handleUpload(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-
-  const fd = new FormData();
-  fd.append("file", file);
-  fd.append("doc_type", "EngagementLetter");
-
-  const res = await fetch("/api/upload/personal-document", {
-    method: "POST",
-    headers: {
-      Authorization: "Bearer " + token,
-    },
-    body: fd,
-  });
-
-  if (!res.ok) {
-    const text = await res.text();
-    alert("Upload failed:\n" + text);
-    console.error("Upload error:", text);
-    return;
-  }
-
-  const data = await res.json();
-  engagementFileId = data.file_id;
-
-  document.getElementById("viewBtn").style.display = "inline-flex";
-document.getElementById("deleteBtn").style.display = "inline-flex";
-
-  enableDashboard();
-}
-
-/* ================= RESTORE STATE ================= */
-async function restoreEngagementLetter() {
-  const res = await fetch("/api/upload/engagement-letter/status", {
-    headers: {
-      Authorization: "Bearer " + token,
-    },
-  });
-
-  if (!res.ok) return;
-
-  const data = await res.json();
-  // if (data.uploaded) {
-  //   engagementFileId = data.file_id;
-  //   fileActions.style.display = "flex";
-  //   enableDashboard();
-  // }
-  if (data.uploaded) {
-  engagementFileId = data.file_id;
-
-  document.getElementById("viewBtn").style.display = "inline-flex";
-  document.getElementById("deleteBtn").style.display = "inline-flex";
-
-  enableDashboard();
-}
-
-}
-
-restoreEngagementLetter();
-
-/* ================= UI ================= */
-function enableDashboard() {
-  personalBtn.disabled = false;
-  businessBtn.disabled = false;
-  personalBtn.classList.add("enabled");
-  businessBtn.classList.add("enabled");
-}
-
-function viewFile() {
-  if (!engagementFileId) return;
-  window.open(
-    `https://drive.google.com/file/d/${engagementFileId}/view`,
-    "_blank"
-  );
-}
-
-async function deleteFile() {
-  document.getElementById("viewBtn").style.display = "none";
-document.getElementById("deleteBtn").style.display = "none";
-
-  if (!engagementFileId) return;
-
-  const confirmed = confirm("Delete this document permanently?");
-  if (!confirmed) return;
-
-  const res = await fetch(
-    `/api/upload/personal-document/${engagementFileId}`,
-    {
-      method: "DELETE",
-      headers: {
-        Authorization: "Bearer " + token,
-      },
+    if (!token || role?.toLowerCase() !== "user") {
+      window.location.href = "/login";
     }
-  );
+
+    function goPersonal() {
+      window.location.href = "/upload-personal";
+    }
+
+    function goBusiness() {
+      window.location.href = "/upload-business";
+    }
+
+    function logoutUser() {
+      localStorage.clear();
+      window.location.href = "/login";
+    }
+  </script>
+
+
+<!-- <script>
+async function loadAdminUploadedDocs() {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+
+  const res = await fetch("/api/upload/my-documents", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    }
+  });
 
   if (!res.ok) {
-    alert("Delete failed");
+    console.warn("Failed to load documents");
     return;
   }
 
-  engagementFileId = null;
-  // fileActions.style.display = "none";
+  const documents = await res.json();
+  const list = document.getElementById("adminDocsList");
 
-  personalBtn.disabled = true;
-  businessBtn.disabled = true;
-  personalBtn.classList.remove("enabled");
-  businessBtn.classList.remove("enabled");
+  const ADMIN_DOCS = ["Document 01", "Document 02", "Document 03"];
+
+  const adminDocs = documents.filter(d =>
+    ADMIN_DOCS.includes(d.doc_type)
+  );
+
+  if (!adminDocs.length) {
+    list.innerHTML =
+      "<small style='color:#6b7a86'>No documents uploaded by admin yet.</small>";
+    return;
+  }
+
+  list.innerHTML = adminDocs.map(d => `
+    <div style="
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:12px;
+      margin-bottom:10px;
+      border:1px solid #dceaf5;
+      border-radius:10px;
+      background:#fff
+    ">
+      <span>${d.doc_type}</span>
+      <button
+        class="download-pill"
+        onclick="window.open(
+          'https://drive.google.com/file/d/${d.drive_file_id}/view',
+          '_blank'
+        )"
+      >
+        View
+      </button>
+    </div>
+  `).join("");
 }
+
+document.addEventListener("DOMContentLoaded", loadAdminUploadedDocs);
+</script>
+ -->
+
+
+
+ <script>
+async function loadAdminUploadedDocs() {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+
+  const res = await fetch("/api/upload/my-documents", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    }
+  });
+
+  if (!res.ok) {
+    console.warn("Failed to load documents");
+    return;
+  }
+
+  const documents = await res.json();
+  const list = document.getElementById("adminDocsList");
+
+  const ADMIN_DOCS = ["Document 01", "Document 02", "Document 03"];
+
+  // ✅ Deduplicate by doc_type (latest wins)
+  const docMap = {};
+  documents.forEach(d => {
+    if (ADMIN_DOCS.includes(d.doc_type)) {
+      docMap[d.doc_type] = d;
+    }
+  });
+
+  const adminDocs = Object.values(docMap);
+
+  if (!adminDocs.length) {
+    list.innerHTML =
+      "<small style='color:#6b7a86'>No documents uploaded by admin yet.</small>";
+    return;
+  }
+
+  list.innerHTML = adminDocs.map(d => `
+    <div style="
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:12px;
+      margin-bottom:10px;
+      border:1px solid #dceaf5;
+      border-radius:10px;
+      background:#fff
+    ">
+      <span>${d.doc_type}</span>
+      <button
+        class="download-pill"
+        onclick="window.open(
+          'https://drive.google.com/file/d/${d.drive_file_id}/view',
+          '_blank'
+        )"
+      >
+        View
+      </button>
+    </div>
+  `).join("");
+}
+
+document.addEventListener("DOMContentLoaded", loadAdminUploadedDocs);
 </script>
 
 

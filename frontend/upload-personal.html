@@ -175,8 +175,8 @@ if (!token || role?.toLowerCase() !== "user") {
 /* ================= DOCUMENT CONFIG ================= */
 const docs = [
   {
-    name: "s_corporation organizer 2025",
-    download: "./images/s_corporation_organizer_2025-business-doc-1.pdf"
+    name: "Individual taxpayer organizer sole proprietorship rental 2025",
+    download: "./images/individual_taxpayer_organizer_sole_proprietorship_rental_2025-doc-1.pdf"
   },
   { name: "W2", download: null },
   { name: "1099", download: null }
@@ -221,6 +221,12 @@ function renderDocs() {
     document.getElementById(`view${i}`).onclick = () => viewFile(i);
     document.getElementById(`delete${i}`).onclick = () => deleteFile(i);
   });
+}
+
+
+function logoutUser(){
+  localStorage.clear();
+  window.location.href="/login";
 }
 
 /* ================= UPLOAD ================= */
