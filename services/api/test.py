@@ -5,8 +5,8 @@ from app.db import SessionLocal
 db = SessionLocal()
 admin_user = create_user(
     db,
-    name="sachink",
-    email="sachink.aiindia@gmail.com",
+    name="NAME",
+    email="MAIL@gmail.com",
     phone="99",
     password="pass",
     role="admin"
