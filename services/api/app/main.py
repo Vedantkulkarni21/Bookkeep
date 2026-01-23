@@ -114,6 +114,10 @@ def services_page():
 def about_us_page():
     return serve_frontend_file("about-us.html")
 
+@app.get("/admin-login", tags=["frontend"])
+def admin_login_page():
+    return serve_frontend_file("admin-login.html")
+    
 @app.post("/logout")
 def logout():
     # JWT is stateless → nothing to invalidate server-side
@@ -140,3 +144,17 @@ async def test_email():
         body="<p>Email sending is working ✔️</p>"
     )
     return {"status": "sent"}
+
+
+
+@app.get("/auth/google/callback")
+def google_callback(code: str = None):
+    return "OAuth successful. You can close this tab."
+
+@app.get("/forgot-password", tags=["frontend"])
+def forgot_password_page():
+    return serve_frontend_file("forgot-password.html")
+
+@app.get("/reset-password", tags=["frontend"])
+def reset_password_page():
+    return serve_frontend_file("reset-password.html")

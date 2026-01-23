@@ -24,9 +24,7 @@
   font-family: "Poppins", sans-serif;
 }
 
-html {
-  font-size: clamp(14px, 1vw, 16px);
-}
+html { font-size: clamp(14px, 1vw, 16px); }
 
 body {
   background: var(--bg);
@@ -59,9 +57,7 @@ body {
   float: right;
 }
 
-.logout-btn:hover {
-  background: #e56e0d;
-}
+.logout-btn:hover { background: #e56e0d; }
 
 /* MAIN CONTAINER */
 .main {
@@ -75,10 +71,7 @@ body {
 }
 
 /* TITLE */
-.title {
-  text-align: center;
-  margin-bottom: 24px;
-}
+.title { text-align: center; margin-bottom: 24px; }
 
 .title h1 {
   font-size: clamp(18px, 2.5vw, 24px);
@@ -100,7 +93,7 @@ body {
   margin-top: 22px;
 }
 
-/* USER CARD */
+/* USER CARD (unchanged visually) */
 .user-card {
   display: flex;
   justify-content: space-between;
@@ -111,11 +104,19 @@ body {
   border: 1px solid #e6edf3;
   background: #fbfdff;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative; /* does NOT affect layout */
+  cursor: pointer;
 }
 
 .user-card:hover {
   transform: translateY(-3px);
   box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+/* invisible click layer — no UI change */
+.user-card .click-layer {
+  position: absolute;
+  inset: 0;
 }
 
 /* LEFT */
@@ -140,9 +141,7 @@ body {
   flex-shrink: 0;
 }
 
-.user-info {
-  min-width: 0;
-}
+.user-info { min-width: 0; }
 
 .user-info .name {
   font-weight: 600;
@@ -156,22 +155,6 @@ body {
 .user-info .meta {
   font-size: clamp(12px, 1.8vw, 13px);
   color: var(--muted);
-}
-
-/* BUTTON */
-.btn-view {
-  background: var(--primary);
-  color: #fff;
-  padding: 10px 16px;
-  border-radius: 12px;
-  font-size: clamp(12px, 1.8vw, 13px);
-  text-decoration: none;
-  transition: background 0.2s ease;
-  flex-shrink: 0;
-}
-
-.btn-view:hover {
-  background: var(--primary-dark);
 }
 
 /* EMPTY */
@@ -190,9 +173,7 @@ body {
   text-align: center;
 }
 
-.footer img {
-  width: clamp(120px, 25vw, 160px);
-}
+.footer img { width: clamp(120px, 25vw, 160px); }
 
 .footer small {
   display: block;
@@ -201,40 +182,20 @@ body {
   font-size: clamp(11px, 1.8vw, 13px);
 }
 
-/* MOBILE OPTIMIZATION */
+/* MOBILE */
 @media (max-width: 480px) {
-  .user-card {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .btn-view {
-    width: 100%;
-    text-align: center;
-    margin-top: 10px;
-  }
+  .user-card { flex-direction: column; align-items: flex-start; }
 }
 </style>
 </head>
 
 <body>
 
-<!-- HEADER -->
-  <div class="header">
+<div class="header">
+  <img src="/images/bookkeeppro-logo.webp" onclick="window.location.href='/home'" alt="BookKeepPro"/>
+  <button class="logout-btn" onclick="logoutUser()">Logout</button>
+</div>
 
-    <img
-      src="/images/bookkeeppro-logo.webp"
-      onclick="window.location.href='/home'"
-      alt="BookKeepPro"
-    />
-
-    <button class="logout-btn" onclick="logoutUser()">
-      Logout
-    </button>
-
-  </div>
-
-<!-- MAIN -->
 <div class="main">
   <div class="title">
     <h1>Admin Dashboard</h1>
@@ -246,22 +207,84 @@ body {
   </div>
 </div>
 
-<!-- FOOTER -->
 <div class="footer">
   <img src="/images/bookkeeppro-logo.webp" alt="logo">
-  <small>© 2024 BookKeepro Business Solutions. All rights reserved.</small>
+  <small>© 2026 BookKeepro Business Solutions. All rights reserved.</small>
 </div>
 
-<script src="/js/admin.js"></script>
+<!-- INLINE SCRIPT ONLY — no external admin.js -->
 <script>
-  function logoutUser() {
-  localStorage.removeItem("token");
-  localStorage.removeItem("role");
-  localStorage.removeItem("checklistDownloaded");
+const token = localStorage.getItem('token');
+const role  = localStorage.getItem('role');
 
+if (!token || role !== 'admin') {
   window.location.href = "/login";
 }
 
+function logoutUser() {
+  localStorage.removeItem("token");
+  localStorage.removeItem("role");
+  localStorage.removeItem("checklistDownloaded");
+  window.location.href = "/login";
+}
+
+async function loadUsers() {
+  const container = document.getElementById("users");
+
+  try {
+    const res = await fetch("/api/auth/admin/users", {
+      headers: { Authorization: "Bearer " + token }
+    });
+
+    if (res.status === 401 || res.status === 403) {
+      localStorage.clear();
+      window.location.href = "/login";
+      return;
+    }
+
+    const users = await res.json();
+
+    if (!Array.isArray(users) || users.length === 0) {
+      container.innerHTML = '<div class="empty">No users found.</div>';
+      return;
+    }
+
+    container.innerHTML = "";
+
+    users.forEach(u => {
+      const card = document.createElement("div");
+      card.className = "user-card";
+
+      card.innerHTML = `
+        <div class="user-left">
+          <div class="avatar">${(u.name || "U").charAt(0).toUpperCase()}</div>
+
+          <div class="user-info">
+            <div class="name">User Name: ${u.name || "—"}</div>
+            <div class="meta">Role Type: ${u.role || "user"}</div>
+            <div class="meta">Email: ${u.email || "—"}</div>
+          </div>
+        </div>
+
+        <!-- invisible overlay so whole card is clickable -->
+        <div class="click-layer"></div>
+      `;
+
+      card.addEventListener("click", () => {
+        window.location.href = `/admin-user-detail?user_id=${u.id}`;
+      });
+
+      container.appendChild(card);
+    });
+
+  } catch (err) {
+    console.error(err);
+    container.innerHTML = '<div class="empty">Error loading users.</div>';
+  }
+}
+
+loadUsers();
 </script>
+
 </body>
 </html>

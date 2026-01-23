@@ -48,6 +48,98 @@ def create_access_token(
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
 
+RESET_TOKEN_EXPIRE_MINUTES = 15
+
+def create_password_reset_token(email: str) -> str:
+    expire = datetime.utcnow() + timedelta(minutes=RESET_TOKEN_EXPIRE_MINUTES)
+    payload = {
+        "sub": email,
+        "type": "password_reset",
+        "exp": expire,
+    }
+    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+
+
+from app.schemas import ForgotPasswordRequest, ResetPasswordRequest
+
+from fastapi import BackgroundTasks
+from app.utils.emailer import send_email
+
+@router.post("/forgot-password")
+async def forgot_password(
+    payload: ForgotPasswordRequest,
+    background: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
+    user = crud.get_user_by_email(db, payload.email)
+
+    # Anti-enumeration
+    if not user:
+        return {"message": "If the email exists, a reset link has been sent"}
+
+    reset_token = create_password_reset_token(user.email)
+
+    frontend_url = os.getenv("FRONTEND_URL", "https://bookkeepro.net")
+    reset_link = f"{frontend_url}/reset-password?token={reset_token}"
+
+    background.add_task(
+        send_email,
+        to=user.email,
+        subject="Reset your BookKeepro password",
+        body=f"""
+        Hi {user.name},<br><br>
+        Click the button below to reset your password:<br><br>
+
+        <a href="{reset_link}"
+           style="padding:12px 18px;
+                  background:#FF7F11;
+                  color:#fff;
+                  text-decoration:none;
+                  border-radius:6px;">
+            Reset Password
+        </a>
+        <br><br>
+        This link expires in 15 minutes.<br><br>
+        BookKeepro Team
+        """
+    )
+
+    return {"message": "If the email exists, a reset link has been sent"}
+
+
+@router.post("/reset-password")
+def reset_password(
+    payload: ResetPasswordRequest,
+    db: Session = Depends(get_db),
+):
+    try:
+        decoded = jwt.decode(payload.token, SECRET_KEY, algorithms=[ALGORITHM])
+        email = decoded.get("sub")
+        token_type = decoded.get("type")
+
+        if token_type != "password_reset":
+            raise HTTPException(status_code=400, detail="Invalid token")
+
+    except JWTError:
+        raise HTTPException(status_code=400, detail="Invalid or expired token")
+
+    user = crud.get_user_by_email(db, email)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    hashed_password = pwd_context.hash(payload.new_password)
+
+    crud.update_user_password(db, user, hashed_password)
+
+    print("Decoded token:", decoded)
+    print("Current time:", datetime.utcnow())
+
+
+    return {"message": "Password reset successful"}
+
+
+
+
 def get_current_user(
     token: str = Depends(oauth2_scheme),
     db: Session = Depends(get_db),

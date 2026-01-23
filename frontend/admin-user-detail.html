@@ -41,7 +41,11 @@ body{
 .doc-table th{background:#f5f7fa}
 .view-btn{
   background:#2da9ff;color:#fff;border:none;
-  padding:6px 14px;border-radius:20px;font-size:12px;cursor:pointer;margin-left:10px
+  padding:6px 14px;border-radius:20px;font-size:12px;cursor:pointer;margin-left:10px;
+}
+.view-btn:active{
+  transform:translateY(1px) scale(.94);
+  box-shadow:0 2px 6px rgba(0,0,0,.12);
 }
 .timeline-box{flex:1;border-left:1px solid #aaa;padding:20px;text-align:center}
 .timeline-control{display:flex;justify-content:center;gap:14px;margin:20px 0}
@@ -50,6 +54,10 @@ body{
   background:#2da9ff;color:#fff;border:none;
   padding:12px 18px;border-radius:20px;cursor:pointer;width:100%
 }
+.approve-filing-btn:active{
+  transform:translateY(1px) scale(.96);
+  box-shadow:0 2px 6px rgba(0,0,0,.12);
+}
 .footer{background:#BEE2FA;padding:clamp(16px,4vw,22px);text-align:center}
 .footer img{width:clamp(120px,30vw,160px)}
 @media(max-width:768px){
@@ -57,7 +65,65 @@ body{
   .approval-panel{flex-direction:column}
   .timeline-box{border-left:none;border-top:1px solid #aaa}
 }
-  </style>
+
+.panel-item{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:14px;
+  border-radius:12px;
+  border:1px solid #e6eef6;
+  background:#fff;
+  margin-bottom:12px;
+}
+
+.panel-left{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+.panel-actions{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+.container{
+  width:min(100%,1100px);
+  margin:0 auto;
+}
+
+.upload-list{
+  display:flex;
+  flex-direction:column;
+}
+
+.upload-label{
+  padding:8px 12px;
+  border-radius:8px;
+  background:#0077c8;
+  color:#fff;
+  cursor:pointer;
+  border:none;
+}
+
+.delete-btn{
+  padding:6px 10px;
+  border-radius:8px;
+  background:#fff;
+  color:#ff6b6b;
+  border:1px solid #ffd0d0;
+  cursor:pointer;
+  display:none;
+}
+
+.small-muted{
+  font-size:13px;
+  color:#777;
+}
+
+</style>
+
 </head>
 
 <body>
@@ -87,6 +153,21 @@ body{
       <h3 id="uploadStatus">0/0</h3>
     </div>
   </div>
+
+  <div id="engagementBox" style="
+  margin-bottom:20px;
+  padding:14px;
+  border:1px solid #cfe3f7;
+  border-radius:12px;
+  background:#f7fbff;
+  display:none;
+">
+  <b>General Engagement Form</b>
+  <button id="engagementViewBtn" class="view-btn">
+    View
+  </button>
+</div>
+
 
   <div class="approval-panel">
 
@@ -120,86 +201,143 @@ body{
   </div>
 </div>
 
+<section class="container" style="margin-bottom:40px">
+  <h3 style="margin-bottom:16px;color:#0077c8">Document Upload Panel</h3>
+
+  <div id="docPanel" class="upload-list"></div>
+
+  <div style="margin-top:14px;text-align:right">
+    <!-- <button class="upload-label" onclick="submitDocs()">Submit</button> -->
+     <button class="upload-label" onclick="submitForReview()">
+  Submit for review
+</button>
+
+  </div>
+</section>
+
+
 <div class="footer">
   <img src="/images/bookkeeppro-logo.webp">
-  <small>© 2024 Bookkeepro Business Solutions</small>
+  <small>© 
+    2026 Bookkeepro Business Solutions</small>
 </div>
 
-
-<!-- ========= SCRIPT (SCOPED + PERSISTENT) ========= -->
 <script>
-(() => {
+async function submitForReview() {
+  if (!confirm("Submit documents for user review?")) return;
 
+  const res = await fetch("/api/review/submit", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + window.AUTH_TOKEN
+    },
+    body: JSON.stringify({
+      user_id: userId
+    })
+  });
+
+  if (!res.ok) {
+    alert("Failed to submit documents for review");
+    return;
+  }
+
+  alert("Documents submitted. User has been notified.");
+}
+</script>
+
+<script>
+  window.AUTH_TOKEN = localStorage.getItem("token");
+  window.AUTH_ROLE  = localStorage.getItem("role");
+</script>
+
+<script>
+/* ================= AUTH + GLOBALS ================= */
 const params = new URLSearchParams(window.location.search);
 const userId = params.get("user_id");
-const token = localStorage.getItem("token");
-const role = localStorage.getItem("role");
 
-if (!token || role !== "admin") {
+const token = window.AUTH_TOKEN;
+const role  = window.AUTH_ROLE;
+
+if (!token || role !== "admin" || !userId) {
   localStorage.clear();
   window.location.href = "/login";
 }
 
-if (!userId) {
-  alert("No user selected");
-  window.location.href = "/admin-dashboard";
-}
-
-/* 🟢 In-page persistent review state */
-let docReviewState = {};   // { filename: "approved" | "rejected" }
-
+/* ================= REVIEW STATE ================= */
+const REVIEW_KEY = `docReviewState_${userId}`;
+let reviewState = {};
 let timeline = 0;
-function incrementTimeline(){ timeline++; document.getElementById("timelineValue").textContent = timeline; }
-function decrementTimeline(){ if(timeline>0) timeline--; document.getElementById("timelineValue").textContent = timeline; }
-window.incrementTimeline = incrementTimeline;
-window.decrementTimeline = decrementTimeline;
 
 
+/* ================= TIMELINE ================= */
+window.incrementTimeline = () => {
+  timeline++;
+  timelineValue.textContent = timeline;
+};
+
+window.decrementTimeline = () => {
+  if (timeline > 0) timeline--;
+  timelineValue.textContent = timeline;
+};
+
+
+
+
+/* ================= LOAD USER DETAILS ================= */
 async function loadUserDetails() {
+  reviewState = JSON.parse(localStorage.getItem(REVIEW_KEY) || "{}");
 
   const res = await fetch(`/api/auth/admin/users/${userId}/documents`, {
-    headers:{ Authorization:"Bearer "+token }
+    headers: { Authorization: "Bearer " + token }
   });
 
-  if(res.status === 401 || res.status === 403){
+  if (!res.ok) {
     localStorage.clear();
     window.location.href = "/login";
     return;
   }
 
-  const data = await res.json();
-  const user = data.user || {};
-  const docs = data.documents || [];
+  const { user = {}, documents = [] } = await res.json();
 
-  document.getElementById("detailName").textContent = user.name || "—";
-  document.getElementById("detailRole").textContent = user.role || "—";
-  document.getElementById("detailEmail").textContent = user.email || "—";
-  document.getElementById("uploadStatus").textContent =
-      `${docs.length} uploaded`;
+  detailName.textContent  = user.name  || "—";
+  detailRole.textContent  = user.role  || "—";
+  detailEmail.textContent = user.email || "—";
+  uploadStatus.textContent = `${documents.length} uploaded`;
 
-  const tbody = document.getElementById("docTable");
-  tbody.innerHTML = "";
+  docTable.innerHTML = "";
+  engagementBox.style.display = "none";
 
-  if (!docs.length){
-    tbody.innerHTML =
-      `<tr><td colspan="3" style="text-align:center;color:#6b7a86">
-         No documents uploaded
-       </td></tr>`;
+  const normalDocs = [];
+
+  documents.forEach(d => {
+    if (d.doc_type === "EngagementLetter") {
+      engagementBox.style.display = "flex";
+      engagementViewBtn.onclick = () =>
+        window.open(`https://drive.google.com/file/d/${d.drive_file_id}/view`, "_blank");
+    } else {
+      normalDocs.push(d);
+    }
+  });
+
+  if (!normalDocs.length) {
+    docTable.innerHTML = `
+      <tr>
+        <td colspan="3" style="text-align:center;color:#6b7a86">
+          No other documents uploaded
+        </td>
+      </tr>`;
     return;
   }
 
-  docs.forEach((d,i)=>{
-    const filename = d.filename;
-
-    // restore saved state if exists
-    const savedState = docReviewState[filename] || null;
+  normalDocs.forEach((d, i) => {
+    const state = reviewState[d.drive_file_id] || null;
 
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${i+1}. ${filename}
+      <td>${i + 1}. ${d.original_name || d.filename}
         <button class="view-btn">View</button>
       </td>
-
       <td><input type="checkbox" class="approve"></td>
       <td><input type="checkbox" class="reject"></td>
     `;
@@ -207,43 +345,69 @@ async function loadUserDetails() {
     const approve = tr.querySelector(".approve");
     const reject  = tr.querySelector(".reject");
 
-    // apply persisted selection
-    if(savedState === "approved") approve.checked = true;
-    if(savedState === "rejected") reject.checked = true;
+    approve.checked = state === "approved";
+    reject.checked  = state === "rejected";
 
-    approve.addEventListener("change",()=>{
-      if(approve.checked){
-        reject.checked = false;
-        docReviewState[filename] = "approved";
-      } else delete docReviewState[filename];
-    });
+    approve.onchange = () =>
+  updateState(d.drive_file_id, approve, reject, "approved");
 
-    reject.addEventListener("change",()=>{
-      if(reject.checked){
-        approve.checked = false;
-        docReviewState[filename] = "rejected";
-      } else delete docReviewState[filename];
-    });
+reject.onchange  = () =>
+  updateState(d.drive_file_id, reject, approve, "rejected");
 
-    tr.querySelector(".view-btn").addEventListener("click",()=>{
-      window.open(`https://drive.google.com/file/d/${d.drive_file_id}/view`,`_blank`);
-    });
 
-    tbody.appendChild(tr);
+    tr.querySelector(".view-btn").onclick = () =>
+      window.open(`https://drive.google.com/file/d/${d.drive_file_id}/view`, "_blank");
+
+    docTable.appendChild(tr);
   });
 }
 
+function updateState(fileId, active, other, value) {
+  if (active.checked) {
+    other.checked = false;
+    reviewState[fileId] = value;
+  } else {
+    delete reviewState[fileId];
+  }
+  localStorage.setItem(REVIEW_KEY, JSON.stringify(reviewState));
+}
 
-/* 🟢 Send review mail when button pressed */
-async function approveForFiling(){
+
+/* ================= NAV ================= */
+window.goBack = () => window.location.href = "/admin-dashboard";
+window.logoutUser = () => {
+  localStorage.clear();
+  window.location.href = "/login";
+};
+</script>
+
+<!-- <script>
+async function approveForFiling() {
+  alert("Approve button clicked"); // 1️⃣ click confirmation
+
+  if (!confirm("Send approval / rejection email to user?")) {
+    alert("Approval cancelled");
+    return;
+  }
 
   const approved = [];
   const rejected = [];
 
-  Object.entries(docReviewState).forEach(([name,status])=>{
-    if(status === "approved") approved.push(name);
-    if(status === "rejected") rejected.push(name);
+  Object.entries(reviewState).forEach(([fileId, status]) => {
+    if (status === "approved") approved.push(fileId);
+    if (status === "rejected") rejected.push(fileId);
   });
+
+  alert(
+    "Approved: " + approved.length +
+    "\nRejected: " + rejected.length +
+    "\nTimeline: " + timeline
+  );
+
+  if (!approved.length && !rejected.length) {
+    alert("❌ No documents selected");
+    return;
+  }
 
   const payload = {
     user_id: userId,
@@ -252,50 +416,249 @@ async function approveForFiling(){
     timeline
   };
 
-  const res = await fetch("/api/review/notify-user",{
-    method:"POST",
-    headers:{
-      "Content-Type":"application/json",
-      Authorization:"Bearer "+token
-    },
-    body:JSON.stringify(payload)
+  console.log("Sending payload:", payload);
+  alert("Sending request to backend...");
+
+  let res;
+  try {
+    res = await fetch("/api/review/notify-user", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + window.AUTH_TOKEN
+      },
+      body: JSON.stringify(payload)
+    });
+  } catch (err) {
+    console.error(err);
+    alert("❌ Network / fetch error");
+    return;
+  }
+
+  alert("Response status: " + res.status);
+
+  const text = await res.text();
+  console.log("Backend response:", text);
+
+  if (!res.ok) {
+    alert("❌ Backend rejected request\n\n" + text);
+    return;
+  }
+
+  localStorage.removeItem(`docReviewState_${userId}`);
+  reviewState = {};
+
+  alert("✅ Approval email SENT successfully");
+}
+</script> -->
+
+<script>
+async function approveForFiling() {
+  if (!confirm("Send approval / rejection email to user?")) return;
+
+  const approved = [];
+  const rejected = [];
+
+  Object.entries(reviewState).forEach(([fileId, status]) => {
+    if (status === "approved") approved.push(fileId);
+    if (status === "rejected") rejected.push(fileId);
   });
 
-  if(res.ok){
-    alert("Review email sent to user successfully");
-  } else {
-    alert("Failed to send email");
+  if (!approved.length && !rejected.length) {
+    alert("Please approve or reject at least one document.");
+    return;
   }
+
+  const res = await fetch("/api/review/notify-user", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + window.AUTH_TOKEN
+    },
+    body: JSON.stringify({
+      user_id: userId,
+      approved,
+      rejected,
+      timeline
+    })
+  });
+
+  if (!res.ok) {
+    alert("Failed to send approval email. Please try again.");
+    return;
+  }
+
+  localStorage.removeItem(`docReviewState_${userId}`);
+  reviewState = {};
+
+  alert("Approval email sent successfully.");
+}
+</script>
+
+
+<script>
+/* ================= PANEL CONFIG ================= */
+// const PANEL_DOCS = ["Document 01", "Document 02", "Document 03"];
+const PANEL_DOCS = [
+  { key: "panel_doc_1", label: "Document 01" },
+  { key: "panel_doc_2", label: "Document 02" },
+  { key: "panel_doc_3", label: "Document 03" }
+];
+
+
+const panelWrapper = document.getElementById("docPanel");
+const panelFiles = {};
+
+/* ================= RENDER PANEL ================= */
+function renderPanel() {
+  panelWrapper.innerHTML = "";
+
+  // PANEL_DOCS.forEach((name, i) => {
+  PANEL_DOCS.forEach(({ label }, i) => {
+
+    panelWrapper.innerHTML += `
+      <div class="panel-item">
+        <div class="panel-left">
+          <b>${i + 1}. ${label}</b>
+          <span id="panelStatus${i}" class="small-muted">Not uploaded</span>
+        </div>
+
+        <div class="panel-actions">
+          <label class="upload-label" for="panelFile${i}">Upload</label>
+          <input id="panelFile${i}" type="file" hidden>
+
+          <button id="panelView${i}" class="view-btn" style="display:none">View</button>
+          <button id="panelDelete${i}" class="delete-btn" style="display:none">Delete</button>
+        </div>
+      </div>
+    `;
+  });
+
+  PANEL_DOCS.forEach((_, i) => {
+    document.getElementById(`panelFile${i}`).onchange = () => uploadPanelDoc(i);
+    document.getElementById(`panelView${i}`).onclick = () => viewPanelDoc(i);
+    document.getElementById(`panelDelete${i}`).onclick = () => deletePanelDoc(i);
+  });
 }
 
-window.approveForFiling = approveForFiling;
+/* ================= UPLOAD ================= */
+async function uploadPanelDoc(i) {
+  const input = document.getElementById(`panelFile${i}`);
+  const file = input.files[0];
+  if (!file) return;
 
+  panelStatus(i, "Uploading...");
+  input.disabled = true;
 
-/* auto refresh — but keeps selections */
-let refreshInterval = null;
+  const fd = new FormData();
+  fd.append("file", file);
+  // fd.append("doc_type", PANEL_DOCS[i]);
+  fd.append("doc_type", PANEL_DOCS[i].key);
 
-document.addEventListener("DOMContentLoaded",()=>{
+  fd.append("user_id", userId);
+
+  const res = await fetch("/api/upload/business-document", {
+    method: "POST",
+    headers: { Authorization: "Bearer " + token },
+    body: fd
+  });
+
+  if (!res.ok) {
+    panelStatus(i, "Upload failed");
+    input.disabled = false;
+    return;
+  }
+
+  const data = await res.json();
+  panelFiles[i] = data.drive_file_id;
+
+  panelStatus(i, "Uploaded ✓");
+  showPanelButtons(i, true);
+  await loadPanelDocs();
+}
+
+/* ================= VIEW / DELETE ================= */
+function viewPanelDoc(i) {
+  const id = panelFiles[i];
+  if (id) window.open(`https://drive.google.com/file/d/${id}/view`, "_blank");
+}
+
+async function deletePanelDoc(i) {
+  if (!confirm("Delete this document?")) return;
+
+  const id = panelFiles[i];
+  if (!id) return;
+
+  const res = await fetch(`/api/upload/admin-document/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: "Bearer " + token }
+  });
+
+  if (!res.ok) {
+    alert("Delete failed");
+    return;
+  }
+
+  delete panelFiles[i];
+  panelStatus(i, "Not uploaded");
+  showPanelButtons(i, false);
+  document.getElementById(`panelFile${i}`).value = "";
+}
+
+/* ================= HELPERS ================= */
+function panelStatus(i, text) {
+  document.getElementById(`panelStatus${i}`).textContent = text;
+}
+
+function showPanelButtons(i, show) {
+  document.getElementById(`panelView${i}`).style.display = show ? "inline-block" : "none";
+  document.getElementById(`panelDelete${i}`).style.display = show ? "inline-block" : "none";
+}
+
+/* ================= LOAD PANEL DOCS ================= */
+async function loadPanelDocs() {
+  const res = await fetch(`/api/auth/admin/users/${userId}/documents`, {
+    headers: { Authorization: "Bearer " + token }
+  });
+
+  if (!res.ok) return;
+
+  const { documents = [] } = await res.json();
+
+  // documents.forEach(f => {
+  //   const index = PANEL_DOCS.indexOf(f.doc_type);
+  //   if (index === -1) return;
+
+  //   panelFiles[index] = f.drive_file_id;
+  //   panelStatus(index, "Uploaded ✓");
+  //   showPanelButtons(index, true);
+  // });
+
+  documents.forEach(f => {
+  const index = PANEL_DOCS.findIndex(d => d.key === f.doc_type);
+  if (index === -1) return;
+
+  panelFiles[index] = f.drive_file_id;
+  panelStatus(index, "Uploaded ✓");
+  showPanelButtons(index, true);
+});
+
+}
+
+/* ================= INIT ================= */
+let refresh;
+document.addEventListener("DOMContentLoaded", () => {
+  renderPanel();
   loadUserDetails();
-  refreshInterval = setInterval(loadUserDetails, 5000);
+  loadPanelDocs();
+
+  refresh = setInterval(() => {
+    loadUserDetails();
+    loadPanelDocs();
+  }, 15000);
 });
 
-window.addEventListener("beforeunload",()=>{
-  if(refreshInterval) clearInterval(refreshInterval);
-});
-
-
-function goBack(){ window.location.href="/admin-dashboard"; }
-function logoutUser(){
-  localStorage.removeItem("token");
-  localStorage.removeItem("role");
-  localStorage.removeItem("checklistDownloaded");
-  window.location.href="/login";
-}
-
-window.goBack = goBack;
-window.logoutUser = logoutUser;
-
-})();
+window.addEventListener("beforeunload", () => clearInterval(refresh));
 </script>
 
 </body>

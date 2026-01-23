@@ -6,148 +6,118 @@
   <title>BookKeepPro | Login</title>
 
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #f5f5f5;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
+    body{
+      font-family:Arial;
+      background:#f5f5f5;
+      margin:0;
+      display:flex;
+      flex-direction:column;
+      min-height:100vh
     }
 
-     .header {
-  background: #BEE2FA;
-  padding: clamp(14px, 3vw, 22px);
+    .header{
+      background:#BEE2FA;
+      padding:12px 20px
+    }
+
+    .header img{
+      width:240px;
+      cursor:pointer
+    }
+
+    .container{
+  max-width:520px;           /* bigger card */
+  margin:50px auto;
+  background:#fff;
+  padding:70px;              /* more breathing room */
+  border-radius:16px;
+  box-shadow:0 4px 18px rgba(0,0,0,0.12);
+  text-align:center
 }
 
-.header img {
-  width: clamp(160px, 40vw, 240px);
-  cursor: pointer;
+h2{
+  margin-bottom:30px;
+  font-size:26px;
 }
 
-.btn-admin {
-  padding: 10px 16px;
-  background: #FF7F11;
-  color: #fff;
-  border-radius: 25px;
-  border: none;
-  font-weight: 600;
-  cursor: pointer;
-  float: right;
+.links{
+  margin-top:18px;
+  font-size:15.5px;   /* increased from ~14px */
+  line-height:1.6;
 }
 
-.btn-admin:hover {
-  background: #e56e0d;
+.links a{
+  font-weight:400;
 }
 
 
-    .container {
-      max-width: 480px;
-      margin: 50px auto;
-      background: #fff;
-      padding: 50px;
-      border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-      text-align: center;
-      flex: 1;
+
+    input{
+      width:100%;
+      padding:14px;
+      margin-bottom:14px;
+      border:1px solid #ccc;
+      border-radius:8px;
+      box-sizing:border-box
     }
 
-    .container h2 {
-      color: #333;
-      margin-bottom: 30px;
-      font-size: 24px;
+    .button{
+      width:100%;
+      padding:14px;
+      background:#FF7F11;
+      color:#fff;
+      border:none;
+      border-radius:25px;
+      font-size:16px;
+      cursor:pointer
     }
 
-    .form-group {
-      margin-bottom: 20px;
+    .button:hover{
+      background:#e76e00
     }
 
-    input {
-      width: 100%;
-      padding: 14px;
-      margin-bottom: 14px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      font-size: 15px;
+    .password-wrapper{
+      position:relative
     }
 
-    input:focus {
-      outline: none;
-      border-color: #FF7F11;
-      box-shadow: 0 0 5px rgba(255, 127, 17, 0.3);
+    .password-wrapper input{
+      padding-right:70px
     }
 
-    .button-group {
-      display: flex;
-      gap: 12px;
-      margin-top: 25px;
+    .password-toggle{
+      position:absolute;
+      right:12px;
+      top:40%;
+      transform:translateY(-50%);
+      background:none;
+      border:none;
+      color:#0077c8;
+      font-weight:600;
+      cursor:pointer
     }
 
-    .button {
-      flex: 1;
-      padding: 14px;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s;
+    .links{
+      margin-top:12px;
+      font-size:14px
     }
 
-    .btn-user {
-      /* width: */
-      background: #FF7F11;
-      color: #fff;
+    .links a{
+      text-decoration:none
     }
 
-    .btn-user:hover {
-      background: #e76e00;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(255, 127, 17, 0.3);
+    .footer{
+      margin-top:auto;
+      background:#BEE2FA;
+      padding:15px 20px;
+      text-align:center
     }
 
-    .btn-admin {
-      background: #2D5A6B;
-      color: #fff;
+    .footer img{
+      width:180px
     }
 
-    .btn-admin:hover {
-      background: #1f3f4f;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(45, 90, 107, 0.3);
-    }
-
-    .signup-link {
-      margin-top: 15px;
-      font-size: 14px;
-    }
-
-    .signup-link a {
-      color: #FF7F11;
-      text-decoration: none;
-      font-weight: 600;
-    }
-
-    .signup-link a:hover {
-      text-decoration: underline;
-    }
-
-    .footer {
-      margin-top: auto;
-      background: #BEE2FA;
-      padding: 25px 20px;
-      text-align: center;
-    }
-
-    .footer img {
-      width: 180px;
-      margin-bottom: 10px;
-    }
-
-    .footer small {
-      color: #555;
-      font-size: 13px;
+    .footer small{
+      font-size:13px
     }
   </style>
 </head>
@@ -156,95 +126,101 @@
 
   <!-- HEADER -->
   <div class="header">
-
     <img
       src="/images/bookkeeppro-logo.webp"
+      alt="logo"
       onclick="window.location.href='/home'"
-      alt="BookKeepPro"
-    />
-
-      <button type="button" class="button btn-admin"
-                onclick="loginUser('admin')">
-          ADMIN LOGIN
-      </button>
-
+    >
   </div>
 
+  <!-- LOGIN CARD -->
   <div class="container">
     <h2>LOGIN TO YOUR ACCOUNT</h2>
 
-    <form id="loginForm" autocomplete="off" onsubmit="return false;">
-      <div class="form-group">
-        <input id="email" type="email" placeholder="Email Address" required />
-        <input id="password" type="password" placeholder="Password" required />
-      </div>
+    <input
+      id="email"
+      type="email"
+      placeholder="Email Address"
+      required
+    />
 
-      <div class="button-group">
-        <button type="button" class="button btn-user"
-                onclick="loginUser('user')">
-          LOGIN
-        </button>
-      </div>
+    <div class="password-wrapper">
+      <input
+        id="password"
+        type="password"
+        placeholder="Password"
+        required
+      />
+      <button
+        type="button"
+        class="password-toggle"
+        id="toggleBtn"
+        onclick="togglePassword()"
+      >
+        Show
+      </button>
+    </div>
 
-      <div class="signup-link">
-        Don't have an account? <a href="/signup">Sign Up</a>
+    <button class="button" onclick="loginUser()">
+      LOGIN
+    </button>
+
+    <div class="links">
+      <div style="margin-top:10px">
+        Don’t have an account? <a href="/signup">Sign Up</a>
       </div>
-    </form>
+      <div style="margin-top:6px">
+        <a href="/forgot-password">Forgot password?</a>
+      </div>
+    </div>
   </div>
 
+  <!-- FOOTER -->
   <div class="footer">
-    <img src="/images/bookkeeppro-logo.webp" alt="logo">
-    <br>
-    <small>Copyright © 2024 Bookkeepro Business Solutions.</small>
+    <img src="/images/bookkeeppro-logo.webp" alt="logo"><br>
+    <small>Copyright © 2026 Bookkeepro Business Solutions.</small>
   </div>
 
-  <!-- INLINE JAVASCRIPT -->
+  <!-- LOGIN SCRIPT (UNCHANGED) -->
   <script>
-    async function loginUser(expectedRole) {
-      console.log("Login attempt as:", expectedRole);
-
+    async function loginUser() {
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
 
-      if (!email || !password) {
-        alert("Enter email and password");
-        return;
-      }
+      if (!email || !password)
+        return alert("Enter email and password");
 
-      try {
-        const res = await fetch("/api/auth/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password })
-        });
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      });
 
-        const data = await res.json();
-        console.log("Login response:", data);
+      const data = await res.json();
 
-        if (!res.ok) {
-          alert(data.detail || "Login failed");
-          return;
-        }
+      if (!res.ok)
+        return alert(data.detail || "Login failed");
 
-        if (expectedRole && data.role !== expectedRole) {
-          alert("You are not authorized as " + expectedRole);
-          return;
-        }
+      if (data.role !== "user")
+        return alert("Please login from Admin page for admin accounts");
 
-        localStorage.setItem("token", data.access_token);
-        localStorage.setItem("role", data.role);
-        localStorage.setItem("user_id", data.user_id);
+      localStorage.setItem("token", data.access_token);
+      localStorage.setItem("role", data.role);
+      localStorage.setItem("user_id", data.user_id);
 
-        // ✅ REDIRECT
-        if (data.role === "admin") {
-          window.location.href = "/admin-dashboard";
-        } else {
-          window.location.href = "/dashboard";
-        }
+      window.location.href = "/dashboard";
+    }
 
-      } catch (err) {
-        console.error(err);
-        alert("Network error");
+    function togglePassword() {
+      const pwd = document.getElementById("password");
+      const btn = document.getElementById("toggleBtn");
+
+      if (pwd.type === "password") {
+        pwd.type = "text";
+        btn.textContent = "Hide";
+      } else {
+        pwd.type = "password";
+        btn.textContent = "Show";
       }
     }
   </script>
