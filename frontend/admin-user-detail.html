@@ -381,80 +381,9 @@ window.logoutUser = () => {
 };
 </script>
 
-<!-- <script>
-async function approveForFiling() {
-  alert("Approve button clicked"); // 1️⃣ click confirmation
-
-  if (!confirm("Send approval / rejection email to user?")) {
-    alert("Approval cancelled");
-    return;
-  }
-
-  const approved = [];
-  const rejected = [];
-
-  Object.entries(reviewState).forEach(([fileId, status]) => {
-    if (status === "approved") approved.push(fileId);
-    if (status === "rejected") rejected.push(fileId);
-  });
-
-  alert(
-    "Approved: " + approved.length +
-    "\nRejected: " + rejected.length +
-    "\nTimeline: " + timeline
-  );
-
-  if (!approved.length && !rejected.length) {
-    alert("❌ No documents selected");
-    return;
-  }
-
-  const payload = {
-    user_id: userId,
-    approved,
-    rejected,
-    timeline
-  };
-
-  console.log("Sending payload:", payload);
-  alert("Sending request to backend...");
-
-  let res;
-  try {
-    res = await fetch("/api/review/notify-user", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + window.AUTH_TOKEN
-      },
-      body: JSON.stringify(payload)
-    });
-  } catch (err) {
-    console.error(err);
-    alert("❌ Network / fetch error");
-    return;
-  }
-
-  alert("Response status: " + res.status);
-
-  const text = await res.text();
-  console.log("Backend response:", text);
-
-  if (!res.ok) {
-    alert("❌ Backend rejected request\n\n" + text);
-    return;
-  }
-
-  localStorage.removeItem(`docReviewState_${userId}`);
-  reviewState = {};
-
-  alert("✅ Approval email SENT successfully");
-}
-</script> -->
-
 <script>
 async function approveForFiling() {
-  if (!confirm("Send approval / rejection email to user?")) return;
+  if (!confirm("Send approval email to user?")) return;
 
   const approved = [];
   const rejected = [];
@@ -625,16 +554,16 @@ async function loadPanelDocs() {
 
   const { documents = [] } = await res.json();
 
-  // documents.forEach(f => {
-  //   const index = PANEL_DOCS.indexOf(f.doc_type);
-  //   if (index === -1) return;
+//   documents.forEach(f => {
+//   const index = PANEL_DOCS.findIndex(d => d.key === f.doc_type);
+//   if (index === -1) return;
 
-  //   panelFiles[index] = f.drive_file_id;
-  //   panelStatus(index, "Uploaded ✓");
-  //   showPanelButtons(index, true);
-  // });
+//   panelFiles[index] = f.drive_file_id;
+//   panelStatus(index, "Uploaded ✓");
+//   showPanelButtons(index, true);
+// });
 
-  documents.forEach(f => {
+documents.forEach(f => {
   const index = PANEL_DOCS.findIndex(d => d.key === f.doc_type);
   if (index === -1) return;
 
@@ -642,6 +571,7 @@ async function loadPanelDocs() {
   panelStatus(index, "Uploaded ✓");
   showPanelButtons(index, true);
 });
+
 
 }
 

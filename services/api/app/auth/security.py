@@ -203,8 +203,10 @@ def signup(payload: SignupRequest, db: Session = Depends(get_db)):
     }
 
 
+from app.utils.login_email import send_login_welcome_email
+
 @router.post("/login", response_model=TokenResponse)
-def login(payload: LoginRequest, db: Session = Depends(get_db)):
+async def login(payload: LoginRequest, db: Session = Depends(get_db)):
     user = crud.get_user_by_email(db, payload.email)
 
     verified = False
@@ -230,7 +232,6 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
 
     requested_role = (getattr(payload, "role", None) or "user").lower()
 
-    # enforce admin login strictly
     if requested_role == "admin" and user_role != "admin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -238,6 +239,12 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
         )
 
     token = create_access_token(subject=user.email, role=user_role)
+
+    # ✅ NOW THIS IS LEGAL
+    try:
+        await send_login_welcome_email(user.email, user.name)
+    except Exception as e:
+        print("Login welcome email failed:", e)
 
     return {
         "access_token": token,
@@ -290,6 +297,55 @@ def list_users_for_admin(
     ]
 
 
+# @router.get("/admin/users/{user_id}/documents")
+# def get_user_documents(
+#     user_id: int,
+#     db: Session = Depends(get_db),
+#     current_user=Depends(get_current_user),
+# ):
+#     if getattr(current_user, "jwt_role", None) != "admin":
+#         raise HTTPException(
+#             status_code=status.HTTP_403_FORBIDDEN,
+#             detail="Admin access required",
+#         )
+
+#     user = crud.get_user_by_id(db, user_id)
+#     if not user:
+#         raise HTTPException(status_code=404, detail="User not found")
+
+#     from app import models
+
+#     documents = (
+#         db.query(models.UploadedFile)
+#         .filter(models.UploadedFile.owner_id == user_id)
+#         .all()
+#     )
+
+#     return {
+#         "user": {
+#             "id": user.id,
+#             "name": user.name,
+#             "email": user.email,
+#             "phone": user.phone,
+#             "role": user.role.value if hasattr(user.role, "value") else str(user.role),
+#         },
+#         "documents": [
+#             {
+#                 "id": d.id,
+#                 "filename": d.filename,
+#                 "content_type": d.content_type,
+#                 "uploaded_at": d.uploaded_at.isoformat()
+#                 if d.uploaded_at
+#                 else None,
+#                 "drive_file_id": d.drive_file_id,
+#             }
+#             for d in documents
+#         ],
+#     }
+
+
+
+
 @router.get("/admin/users/{user_id}/documents")
 def get_user_documents(
     user_id: int,
@@ -306,11 +362,28 @@ def get_user_documents(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    from app import models
+    from sqlalchemy import func
+    from app.models import UploadedFile
+
+    # 🔥 LATEST document per doc_type (panel-safe)
+    subq = (
+        db.query(
+            UploadedFile.doc_type,
+            func.max(UploadedFile.uploaded_at).label("latest_time")
+        )
+        .filter(UploadedFile.owner_id == user_id)
+        .group_by(UploadedFile.doc_type)
+        .subquery()
+    )
 
     documents = (
-        db.query(models.UploadedFile)
-        .filter(models.UploadedFile.owner_id == user_id)
+        db.query(UploadedFile)
+        .join(
+            subq,
+            (UploadedFile.doc_type == subq.c.doc_type) &
+            (UploadedFile.uploaded_at == subq.c.latest_time)
+        )
+        .order_by(UploadedFile.doc_type)
         .all()
     )
 
@@ -331,7 +404,10 @@ def get_user_documents(
                 if d.uploaded_at
                 else None,
                 "drive_file_id": d.drive_file_id,
+                "doc_type": d.doc_type,  # ✅ IMPORTANT for panel mapping
             }
             for d in documents
         ],
     }
+
+

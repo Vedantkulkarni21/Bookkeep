@@ -109,6 +109,27 @@
 
     .footer img { width:180px; margin-bottom:10px; }
     .footer small { color:#555; font-size:13px; }
+
+    .password-wrapper {
+  position: relative;
+}
+
+.password-wrapper input {
+  padding-right: 70px;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #0077c8;
+  font-weight: 600;
+  cursor: pointer;
+}
+
   </style>
 </head>
 
@@ -131,7 +152,24 @@
     <h2>ADMIN LOGIN</h2>
 
     <input id="email" type="email" placeholder="Admin Email" required />
-    <input id="password" type="password" placeholder="Password" required />
+    <!-- <input id="password" type="password" placeholder="Password" required /> -->
+
+    <div class="password-wrapper">
+  <input
+    id="password"
+    type="password"
+    placeholder="Password"
+    required
+  />
+  <button
+    type="button"
+    class="password-toggle"
+    onclick="toggleAdminPassword()"
+  >
+    Show
+  </button>
+</div>
+
 
     <div class="button-group">
       <button class="button btn-user" onclick="loginAdmin()">
@@ -178,6 +216,22 @@ async function loginAdmin() {
   window.location.href = "/admin-dashboard";
 }
 </script>
+
+<script>
+function toggleAdminPassword() {
+  const pwd = document.getElementById("password");
+  const btn = event.target;
+
+  if (pwd.type === "password") {
+    pwd.type = "text";
+    btn.textContent = "Hide";
+  } else {
+    pwd.type = "password";
+    btn.textContent = "Show";
+  }
+}
+</script>
+
 
 </body>
 </html>

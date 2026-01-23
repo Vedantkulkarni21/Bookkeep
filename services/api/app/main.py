@@ -126,6 +126,9 @@ def logout():
 
 
 
+from app.routers import upload
+app.include_router(upload.router)
+
 
 from app.routers import contact
 app.include_router(contact.router)
