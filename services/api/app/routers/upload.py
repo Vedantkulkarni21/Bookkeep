@@ -1,7 +1,6 @@
 
 import os
 import tempfile
-import time
 import logging
 from fastapi import APIRouter, UploadFile, File, HTTPException, Depends, Form
 from sqlalchemy.orm import Session
@@ -9,14 +8,20 @@ from google.oauth2.credentials import Credentials as OAuth2Credentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 
+from app.models import AdminDocument
 from app.db import get_db
 import app.crud as crud
 from app.routers.auth import get_current_user_real
-# from app.routers.auth import get_current_user
-
-# current_user = Depends(get_current_user)
-
 from app.utils.emailer import send_email
+from app.models import User
+from app.models import (
+    AdminDocument,
+    PersonalDocument,
+    BusinessDocument,
+    User,          # ✅ THIS WAS MISSING
+)
+from app.models import User
+
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +33,40 @@ DRIVE_FOLDER_ID = os.getenv("DRIVE_FOLDER_ID")
 OAUTH_TOKEN_FILE = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "..", "..", "..", "oauth_token.json")
 )
+
+async def upload_to_drive(file: UploadFile) -> str:
+    await file.seek(0)
+
+    service = get_drive_service()
+
+    with tempfile.NamedTemporaryFile(
+        delete=False,
+        suffix=os.path.splitext(file.filename)[1]
+    ) as tmp:
+        tmp.write(await file.read())
+        tmp_path = tmp.name
+
+    try:
+        media = MediaFileUpload(tmp_path, mimetype=file.content_type)
+        meta = {"name": file.filename}
+
+        if DRIVE_FOLDER_ID:
+            meta["parents"] = [DRIVE_FOLDER_ID]
+
+        created = service.files().create(
+            body=meta,
+            media_body=media,
+            fields="id"
+        ).execute()
+
+        return created["id"]
+
+    finally:
+        try:
+            os.remove(tmp_path)
+        except Exception:
+            logger.warning("Temp cleanup failed")
+
 
 # ---------------- GOOGLE DRIVE CLIENT ---------------- #
 def get_drive_service():
@@ -59,314 +98,404 @@ def get_drive_service():
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# ---------------- COMMON UPLOAD HANDLER ---------------- #
-async def _upload_to_drive(file: UploadFile, user_id: int, doc_type: str, db: Session):
-    service = get_drive_service()
+#  drive_id = await upload_to_drive(file)
 
-    temp_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "temp"))
-    os.makedirs(temp_dir, exist_ok=True)
-
-    tmp_path = None
-
-    try:
-        with tempfile.NamedTemporaryFile(
-            dir=temp_dir, delete=False, suffix=os.path.splitext(file.filename)[1]
-        ) as tmp:
-            tmp.write(await file.read())
-            tmp_path = tmp.name
-
-        file_meta = {"name": file.filename}
-        if DRIVE_FOLDER_ID:
-            file_meta["parents"] = [DRIVE_FOLDER_ID]
-
-        media = MediaFileUpload(tmp_path, mimetype=file.content_type)
-
-        drive_file = service.files().create(
-            body=file_meta, media_body=media, fields="id"
-        ).execute()
-
-        drive_id = drive_file["id"]
-
-        # Save to DB WITH doc_type
-        crud.create_uploaded_file(
-            db=db,
-            filename=file.filename,
-            drive_file_id=drive_id,
-            content_type=file.content_type,
-            doc_type=doc_type,
-            owner_id=user_id,
-        )
-
-        return drive_id
-
-    finally:
-        if tmp_path and os.path.exists(tmp_path):
-            try:
-                time.sleep(0.1)
-                os.remove(tmp_path)
-            except Exception:
-                logger.warning("Temp cleanup failed")
-
-
-# ---------------- PERSONAL DOCUMENT UPLOAD ---------------- #
-@router.post("/personal-document")
-async def upload_personal_document(
+@router.post("/admin-documents")
+async def upload_admin_document(
     file: UploadFile = File(...),
-    doc_type: str = Form("Personal"),
+    doc_key: str = Form(...),
+    doc_label: str = Form(...),
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user_real),
 ):
-    try:
-        drive_id = await _upload_to_drive(file, current_user.id, doc_type, db)
-        admin_email = os.getenv("ADMIN_EMAIL")
 
-        await send_email(
-            to=current_user.email,
-            subject="New Personal Document Uploaded — BookKeepro",
-            body=f"""
-            <p>Dear Sir/Ma’am,</p>
+    drive_id = await upload_to_drive(file)
 
-            <p>
-            We have successfully received your personal document:
-            </p>
-
-            <p><strong>{file.filename}</strong></p>
-
-            <p>
-            Our team will review the document and update you on the next steps shortly.
-            </p>
-
-            <p>
-            If any additional information is required, we will contact you promptly.
-            </p>
-
-            <p style="margin-top:20px;">
-            Kind regards,<br>
-            <strong>The BookKeepro Team</strong>
-            </p>
-            """,
-        )
-
-        if admin_email:
-            await send_email(
-                to=admin_email,
-                subject="New Personal Document Uploaded — BookKeepro",
-                body=f"""
-                <p>Dear Team,</p>
-                
-                <p>the <strong>User:</strong> {current_user.email} has uploaded a personal document-</p>
-                <p><strong>File Uploaded:</strong> {file.filename}</p>
-
-                <p>
-                Kindly review the document and proceed with the next steps as applicable.
-                </p>
-
-                <p>
-                Thank you,<br>
-                <strong>BookKeepro Support Team</strong>
-                </p>
-                """,
-            )
-
-        return {"file_id": drive_id, "filename": file.filename}
-
-    except Exception as e:
-        logger.exception("Personal upload error")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-# ---------------- BUSINESS DOCUMENT UPLOAD ---------------- #
-@router.post("/business-document")
-async def upload_business_document(
-    file: UploadFile = File(...),
-    doc_type: str = Form(...),
-    user_id: int | None = Form(None),   # 👈 allow admin override
-    db: Session = Depends(get_db),
-    current_user=Depends(get_current_user_real),
-):
-    owner_id = current_user.id
-
-    # 🔐 admin can upload for selected user
-    if getattr(current_user, "jwt_role", None) == "admin" and user_id:
-        owner_id = user_id
-
-    drive_id = await _upload_to_drive(
-        file=file,
-        user_id=owner_id,
-        doc_type=doc_type,
-        db=db
+    record = AdminDocument(
+        doc_key=doc_key,
+        doc_label=doc_label,
+        filename=file.filename,
+        drive_file_id=drive_id,
+        content_type=file.content_type,
+        uploaded_by=current_user.id,
     )
 
-    return {
-        "drive_file_id": drive_id,
-        "filename": file.filename,
-        "owner_id": owner_id,
-        "doc_type": doc_type,
-    }
-
-
-# ---------------- DELETE (shared) ---------------- #
-@router.delete("/business-document/{file_id}")
-@router.delete("/personal-document/{file_id}")
-async def delete_document(
-    file_id: str,
-    db: Session = Depends(get_db),
-    current_user=Depends(get_current_user_real),
-):
-    try:
-        service = get_drive_service()
-        service.files().delete(fileId=file_id).execute()
-
-        crud.delete_uploaded_file(db, file_id, current_user.id)
-
-        return {"deleted": True}
-
-    except Exception as e:
-        logger.exception("Delete failed")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-# ---------------- LIST USER FILES ---------------- #
-@router.get("/my-documents")
-def my_documents(db: Session = Depends(get_db), current_user=Depends(get_current_user_real)):
-    return db.query(crud.UploadedFile).filter_by(owner_id=current_user.id).all()
-
-
-@router.get("/engagement-letter/status")
-def engagement_letter_status(
-    db: Session = Depends(get_db),
-    current_user=Depends(get_current_user_real),
-):
-    record = (
-        db.query(crud.UploadedFile)
-        .filter(
-            crud.UploadedFile.owner_id == current_user.id,
-            crud.UploadedFile.doc_type == "EngagementLetter"
-        )
-        .first()
-    )
-
-    if not record:
-        return {"uploaded": False}
+    db.add(record)
+    db.commit()
+    db.refresh(record)
 
     return {
-        "uploaded": True,
-        "file_id": record.drive_file_id,
+        "id": record.id,
+        "doc_key": record.doc_key,
+        "doc_label": record.doc_label,
         "filename": record.filename,
+        "drive_file_id": record.drive_file_id,
     }
 
 
-
-
-
-
-
-
-# ---------------- ADMIN DOCUMENT UPLOAD ---------------- #
-@router.post("/admin-upload")
-async def admin_upload_document(
-    file: UploadFile = File(...),
-    doc_type: str = Form(...),
-    user_id: int = Form(...),
+@router.get("/admin-documents")
+def list_admin_documents(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user_real),
 ):
-    # 🔐 Only admin allowed
-    if getattr(current_user, "jwt_role", None) != "admin":
-        raise HTTPException(status_code=403, detail="Admins only")
+    # allow BOTH user and admin
+    if current_user.jwt_role not in ("admin", "user"):
+        raise HTTPException(status_code=403, detail="Unauthorized")
 
-    try:
-        # 🔁 important for FastAPI file streams
-        await file.seek(0)
+    docs = (
+        db.query(AdminDocument)
+        .order_by(AdminDocument.uploaded_at.desc())
+        .all()
+    )
 
-        # ⬆️ Upload FOR THE USER (not admin)
-        drive_id = await _upload_to_drive(
-            file=file,
-            user_id=user_id,      # 🔥 SAME USER ID
-            doc_type=doc_type,    # 🔥 "Document 01 / 02 / 03"
-            db=db,
-        )
-
-        return {
-            "drive_file_id": drive_id,
-            "filename": file.filename,
-            "user_id": user_id,
-            "doc_type": doc_type,
+    return [
+        {
+            "id": d.id,
+            "doc_key": d.doc_key,
+            "doc_label": d.doc_label,
+            "filename": d.filename,
+            "drive_file_id": d.drive_file_id,
         }
-
-    except Exception as e:
-        logger.exception("Admin upload failed")
-        raise HTTPException(status_code=500, detail=str(e))
+        for d in docs
+    ]
 
 
-# ---------------- ADMIN DELETE DOCUMENT ---------------- #
-@router.delete("/admin-document/{file_id}")
-async def admin_delete_document(
-    file_id: str,
+@router.delete("/admin-documents/{doc_id}")
+def delete_admin_document(
+    doc_id: int,
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user_real),
 ):
-    if getattr(current_user, "jwt_role", None) != "admin":
+    if current_user.jwt_role != "admin":
         raise HTTPException(status_code=403, detail="Admins only")
 
-    from app.models import UploadedFile
-
-    record = db.query(UploadedFile).filter(
-        UploadedFile.drive_file_id == file_id
-    ).first()
-
-    if not record:
-        raise HTTPException(status_code=404, detail="File not found")
+    doc = db.query(AdminDocument).filter_by(id=doc_id).first()
+    if not doc:
+        raise HTTPException(status_code=404, detail="Not found")
 
     service = get_drive_service()
-    service.files().delete(fileId=file_id).execute()
+    service.files().delete(fileId=doc.drive_file_id).execute()
 
-    db.delete(record)
+    db.delete(doc)
     db.commit()
 
     return {"deleted": True}
 
 
 
-@router.get("/admin-panel-docs")
-def get_admin_panel_docs(
+from app.models import PersonalDocument
+
+@router.post("/personal-documents")
+async def upload_personal_document(
+    file: UploadFile = File(...),
+    doc_type: str = Form(...),   # ✅ ADD THIS
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user_real),
 ):
-    from sqlalchemy import func
-    from app.models import UploadedFile
 
-    PANEL_DOC_KEYS = ["panel_doc_1", "panel_doc_2", "panel_doc_3"]
+    drive_id = await upload_to_drive(file)
 
-    subq = (
-        db.query(
-            UploadedFile.doc_type,
-            func.max(UploadedFile.uploaded_at).label("latest_time")
-        )
-        .filter(
-            UploadedFile.owner_id == current_user.id,  # ✅ USER
-            UploadedFile.doc_type.in_(PANEL_DOC_KEYS)  # ✅ MATCHES DB
-        )
-        .group_by(UploadedFile.doc_type)
-        .subquery()
+    record = PersonalDocument(
+        user_id=current_user.id,
+        doc_type=doc_type,       # ✅ SAVE THIS
+        filename=file.filename,
+        drive_file_id=drive_id,
+        content_type=file.content_type,
     )
 
-    documents = (
-        db.query(UploadedFile)
-        .join(
-            subq,
-            (UploadedFile.doc_type == subq.c.doc_type) &
-            (UploadedFile.uploaded_at == subq.c.latest_time)
-        )
-        .order_by(UploadedFile.doc_type)
+    db.add(record)
+    db.commit()
+    db.refresh(record)
+
+    return {
+        "id": record.id,
+        "filename": record.filename,
+        "doc_type": record.doc_type,   # ✅ RETURN IT
+        "drive_file_id": record.drive_file_id,
+        "uploaded_at": record.uploaded_at,
+    }
+
+
+@router.get("/personal-documents")
+def list_personal_documents(
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user_real),
+):
+    return (
+        db.query(PersonalDocument)
+        .filter(PersonalDocument.user_id == current_user.id)
+        .order_by(PersonalDocument.uploaded_at.desc())
         .all()
     )
 
-    return [
-        {
+@router.delete("/personal-documents/{doc_id}")
+def delete_personal_document(
+    doc_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user_real),
+):
+    doc = (
+        db.query(PersonalDocument)
+        .filter(
+            PersonalDocument.id == doc_id,
+            PersonalDocument.user_id == current_user.id
+        )
+        .first()
+    )
+
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    # delete from Drive
+    service = get_drive_service()
+    try:
+        service.files().delete(fileId=doc.drive_file_id).execute()
+    except Exception:
+        logger.warning("Drive delete failed, continuing DB cleanup")
+
+    # delete from DB
+    db.delete(doc)
+    db.commit()
+
+    return {"deleted": True}
+
+
+
+from app.models import BusinessDocument
+
+@router.post("/business-documents")
+async def upload_business_document(
+    file: UploadFile = File(...),
+    doc_type: str = Form(...),          # ✅ accept this
+    business_type: str | None = Form(None),
+    user_id: int | None = Form(None),
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user_real),
+):
+    owner_id = current_user.id
+
+    drive_id = await upload_to_drive(file)
+
+    record = BusinessDocument(
+        user_id=owner_id,
+        business_type=doc_type,          # ✅ STORE DOC NAME HERE
+        filename=file.filename,
+        drive_file_id=drive_id,
+        content_type=file.content_type,
+    )
+
+    db.add(record)
+    db.commit()
+    db.refresh(record)
+
+    return {
+        "id": record.id,
+        "filename": record.filename,
+        "business_type": record.business_type,  # ✅ RETURN IT
+        "drive_file_id": record.drive_file_id,
+    }
+
+
+@router.get("/business-documents")
+def list_business_documents(
+    user_id: int | None = None,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user_real),
+):
+    query = db.query(BusinessDocument)
+
+    return (
+        query
+        .order_by(BusinessDocument.uploaded_at.desc())
+        .all()
+    )
+
+
+@router.delete("/business-documents/{doc_id}")
+def delete_business_document(
+    doc_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user_real),
+):
+    doc = db.query(BusinessDocument).filter_by(id=doc_id).first()
+
+    if not doc:
+        raise HTTPException(status_code=404, detail="Not found")
+
+    service = get_drive_service()
+    try:
+        service.files().delete(fileId=doc.drive_file_id).execute()
+    except Exception:
+        logger.warning("Drive delete failed, continuing DB cleanup")
+
+    db.delete(doc)
+    db.commit()
+
+    return {"deleted": True}
+
+
+
+
+
+@router.get("/admin/users/{user_id}/documents")
+def get_user_all_documents(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user_real),
+):
+
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    personal_docs = (
+        db.query(PersonalDocument)
+        .filter(PersonalDocument.user_id == user_id)
+        .all()
+    )
+
+    business_docs = (
+        db.query(BusinessDocument)
+        .filter(BusinessDocument.user_id == user_id)
+        .all()
+    )
+
+    documents = []
+
+    for d in personal_docs:
+        documents.append({
+            "id": d.id,
+            "table": "personal",
             "doc_type": d.doc_type,
             "filename": d.filename,
             "drive_file_id": d.drive_file_id,
+            "uploaded_at": d.uploaded_at,
+        })
+
+    for d in business_docs:
+        documents.append({
+            "id": d.id,
+            "table": "business",
+            "doc_type": d.business_type,
+            "filename": d.filename,
+            "drive_file_id": d.drive_file_id,
+            "uploaded_at": d.uploaded_at,
+        })
+
+        return {
+            "user": {
+                "id": user.id,
+                "name": user.name,
+                "email": user.email,
+                "role": user.role,   # ✅ FIXED
+            },
+            "documents": documents,
         }
-        for d in documents
-    ]
+
+
+
+
+def send_document_upload_email(
+    *,
+    to_email: str,
+    doc_name: str,
+    doc_category: str,
+) -> bool:
+    subject = f"New {doc_category} Document Uploaded — BookKeepro"
+
+    body = f"""
+Dear Sir/Ma’am,
+
+We have successfully received your {doc_category.lower()} document:
+
+{doc_name}
+
+Our team will review the document and update you on the next steps shortly.
+If any additional information is required, we will contact you promptly.
+
+Kind regards,
+The BookKeepro Team
+"""
+
+    try:
+        send_email(
+            to_email=to_email,
+            subject=subject,
+            body=body,
+        )
+        return True
+    except Exception as e:
+        logger.exception("Email send failed")
+        return False
+
+@router.post("/personal-documents")
+async def upload_personal_document(
+    file: UploadFile = File(...),
+    doc_type: str = Form(...),
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user_real),
+):
+    drive_id = await upload_to_drive(file)
+
+    record = PersonalDocument(
+        user_id=current_user.id,
+        doc_type=doc_type,
+        filename=file.filename,
+        drive_file_id=drive_id,
+        content_type=file.content_type,
+    )
+
+    db.add(record)
+    db.commit()
+    db.refresh(record)
+
+    email_sent = send_document_upload_email(
+        to_email=current_user.email,
+        doc_name=file.filename,
+        doc_category="Personal",
+    )
+
+    return {
+        "id": record.id,
+        "filename": record.filename,
+        "doc_type": record.doc_type,
+        "drive_file_id": record.drive_file_id,
+        "uploaded_at": record.uploaded_at,
+        "email_sent": email_sent,   # ✅ IMPORTANT
+    }
+
+
+@router.post("/business-documents")
+async def upload_business_document(
+    file: UploadFile = File(...),
+    doc_type: str = Form(...),
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user_real),
+):
+    drive_id = await upload_to_drive(file)
+
+    record = BusinessDocument(
+        user_id=current_user.id,
+        business_type=doc_type,
+        filename=file.filename,
+        drive_file_id=drive_id,
+        content_type=file.content_type,
+    )
+
+    db.add(record)
+    db.commit()
+    db.refresh(record)
+
+    email_sent = send_document_upload_email(
+        to_email=current_user.email,
+        doc_name=file.filename,
+        doc_category="Business",
+    )
+
+    return {
+        "id": record.id,
+        "filename": record.filename,
+        "business_type": record.business_type,
+        "drive_file_id": record.drive_file_id,
+        "email_sent": email_sent,   # ✅ IMPORTANT
+    }

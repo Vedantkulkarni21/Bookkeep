@@ -297,55 +297,6 @@ def list_users_for_admin(
     ]
 
 
-# @router.get("/admin/users/{user_id}/documents")
-# def get_user_documents(
-#     user_id: int,
-#     db: Session = Depends(get_db),
-#     current_user=Depends(get_current_user),
-# ):
-#     if getattr(current_user, "jwt_role", None) != "admin":
-#         raise HTTPException(
-#             status_code=status.HTTP_403_FORBIDDEN,
-#             detail="Admin access required",
-#         )
-
-#     user = crud.get_user_by_id(db, user_id)
-#     if not user:
-#         raise HTTPException(status_code=404, detail="User not found")
-
-#     from app import models
-
-#     documents = (
-#         db.query(models.UploadedFile)
-#         .filter(models.UploadedFile.owner_id == user_id)
-#         .all()
-#     )
-
-#     return {
-#         "user": {
-#             "id": user.id,
-#             "name": user.name,
-#             "email": user.email,
-#             "phone": user.phone,
-#             "role": user.role.value if hasattr(user.role, "value") else str(user.role),
-#         },
-#         "documents": [
-#             {
-#                 "id": d.id,
-#                 "filename": d.filename,
-#                 "content_type": d.content_type,
-#                 "uploaded_at": d.uploaded_at.isoformat()
-#                 if d.uploaded_at
-#                 else None,
-#                 "drive_file_id": d.drive_file_id,
-#             }
-#             for d in documents
-#         ],
-#     }
-
-
-
-
 @router.get("/admin/users/{user_id}/documents")
 def get_user_documents(
     user_id: int,

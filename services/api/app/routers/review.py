@@ -17,6 +17,53 @@ DASHBOARD_LINK = "https://bookkeepro.net/dashboard"
 # =========================================================
 # Submit documents for review (ADMIN → USER)
 # =========================================================
+# @router.post("/submit")
+# async def submit_review(payload: dict, db: Session = Depends(get_db)):
+#     user_id = payload.get("user_id")
+
+#     if not user_id:
+#         raise HTTPException(status_code=400, detail="user_id required")
+
+#     user = crud.get_user_by_id(db, user_id)
+#     if not user:
+#         raise HTTPException(status_code=404, detail="User not found")
+
+#     # Update review status
+#     user.review_status = "submitted"
+#     db.commit()
+
+#     # Send email (clean, formatted version)
+#     await send_email(
+#         to=user.email,
+#         subject="Documents Ready for Review — BookKeepro",
+#         body=f"""
+#         <p>Dear Sir/Ma’am,</p>
+
+#         <p>
+#           Your documents have been successfully submitted and are pending review.
+#         </p>
+
+#         <p>
+#           Please log in to your dashboard to track the approval status:
+#         </p>
+
+#         <p>
+#           <a href="{DASHBOARD_LINK}"
+#              style="color:#0077c8;font-weight:600;text-decoration:none;">
+#             👉 Go to Dashboard
+#           </a>
+#         </p>
+
+#         <p style="margin-top:20px;">
+#           Kind regards,<br>
+#           <strong>BookKeepro Team</strong>
+#         </p>
+#         """
+#     )
+
+#     return {"status": "submitted"}
+
+
 @router.post("/submit")
 async def submit_review(payload: dict, db: Session = Depends(get_db)):
     user_id = payload.get("user_id")
@@ -32,36 +79,38 @@ async def submit_review(payload: dict, db: Session = Depends(get_db)):
     user.review_status = "submitted"
     db.commit()
 
-    # Send email (clean, formatted version)
-    await send_email(
-        to=user.email,
-        subject="Documents Ready for Review — BookKeepro",
-        body=f"""
-        <p>Dear Sir/Ma’am,</p>
+    email_sent = True
 
-        <p>
-          Your documents have been successfully submitted and are pending review.
-        </p>
+    try:
+        await send_email(
+            to=user.email,
+            subject="Documents Ready for Review — BookKeepro",
+            body=f"""
+            <p>Dear Sir/Ma’am,</p>
 
-        <p>
-          Please log in to your dashboard to track the approval status:
-        </p>
+            <p>Your documents have been successfully submitted and are pending review.</p>
 
-        <p>
-          <a href="{DASHBOARD_LINK}"
-             style="color:#0077c8;font-weight:600;text-decoration:none;">
-            👉 Go to Dashboard
-          </a>
-        </p>
+            <p>
+              <a href="{DASHBOARD_LINK}"
+                 style="color:#0077c8;font-weight:600;text-decoration:none;">
+                👉 Go to Dashboard
+              </a>
+            </p>
 
-        <p style="margin-top:20px;">
-          Kind regards,<br>
-          <strong>BookKeepro Team</strong>
-        </p>
-        """
-    )
+            <p style="margin-top:20px;">
+              Kind regards,<br>
+              <strong>BookKeepro Team</strong>
+            </p>
+            """
+        )
+    except Exception as e:
+        email_sent = False
+        logger.error(f"Email sending failed: {e}")
 
-    return {"status": "submitted"}
+    return {
+        "status": "submitted",
+        "email_sent": email_sent
+    }
 
 
 # =========================================================

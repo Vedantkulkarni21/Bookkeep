@@ -229,7 +229,7 @@
   style="margin:10px auto;text-align:left; margin-bottom: 50px;"
 >
 
-  <p style="text-align:center">
+  <p style="text-align:center;  padding-bottom:10px; font-weight:600; font-size:18px;">
     <b>Documents uploaded by Admin</b>
   </p>
 
@@ -242,183 +242,6 @@
   <div class="footer">
     © 2026 BookKeepro Business Solutions. All rights reserved.
   </div>
-
-  <!-- <script>
-    /* ================= AUTH GUARD ================= */
-    const token = localStorage.getItem("token");
-    const role = localStorage.getItem("role");
-
-    if (!token || role?.toLowerCase() !== "user") {
-      window.location.href = "/login";
-    }
-
-    function goPersonal() {
-      window.location.href = "/upload-personal";
-    }
-
-    function goBusiness() {
-      window.location.href = "/upload-business";
-    }
-
-    function logoutUser() {
-      localStorage.clear();
-      window.location.href = "/login";
-    }
-  </script> -->
-
-<!-- 
- <script>
-async function loadAdminUploadedDocs() {
-  const token = localStorage.getItem("token");
-  if (!token) return;
-
-  const res = await fetch("/api/upload/my-documents", {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    }
-  });
-
-  if (!res.ok) {
-    console.warn("Failed to load documents");
-    return;
-  }
-
-  const documents = await res.json();
-  const list = document.getElementById("adminDocsList");
-
-  const ADMIN_DOCS = ["Document 01", "Document 02", "Document 03"];
-
-  // ✅ Deduplicate by doc_type (latest wins)
-  const docMap = {};
-  documents.forEach(d => {
-    if (ADMIN_DOCS.includes(d.doc_type)) {
-      docMap[d.doc_type] = d;
-    }
-  });
-
-  const adminDocs = Object.values(docMap);
-
-  if (!adminDocs.length) {
-    list.innerHTML =
-      "<small style='color:#6b7a86'>No documents uploaded by admin yet.</small>";
-    return;
-  }
-
-  list.innerHTML = adminDocs.map(d => `
-    <div style="
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      padding:12px;
-      margin-bottom:10px;
-      border:1px solid #dceaf5;
-      border-radius:10px;
-      background:#fff
-    ">
-      <span>${d.doc_type}</span>
-      <button
-        class="download-pill"
-        onclick="window.open(
-          'https://drive.google.com/file/d/${d.drive_file_id}/view',
-          '_blank'
-        )"
-      >
-        View
-      </button>
-    </div>
-  `).join("");
-}
-
-document.addEventListener("DOMContentLoaded", loadAdminUploadedDocs);
-</script> -->
-
-
-<!-- 
-<script>
-/* ================= AUTH GUARD ================= */
-// const token = localStorage.getItem("token");
-// const role  = localStorage.getItem("role");
-
-if (!token || role?.toLowerCase() !== "user") {
-  localStorage.clear();
-  window.location.href = "/login";
-}
-
-/* ================= NAV ================= */
-function goPersonal() {
-  window.location.href = "/upload-personal";
-}
-
-function goBusiness() {
-  window.location.href = "/upload-business";
-}
-
-function logoutUser() {
-  localStorage.clear();
-  window.location.href = "/login";
-}
-
-/* ================= ADMIN DOC LABELS ================= */
-const PANEL_DOC_LABELS = {
-  "Document 01": "Document 01",
-  "Document 02": "Document 02",
-  "Document 03": "Document 03",
-};
-
-/* ================= LOAD ADMIN DOCS ================= */
-async function loadAdminUploadedDocs() {
-  const list = document.getElementById("adminDocsList");
-  if (!list) return;
-
-  const res = await fetch("/api/upload/admin-panel-docs", {
-    headers: {
-      Authorization: "Bearer " + token
-    }
-  });
-
-  if (!res.ok) {
-    list.innerHTML =
-      "<small style='color:#6b7a86'>Failed to load admin documents.</small>";
-    return;
-  }
-
-  const documents = await res.json();
-  console.log("ADMIN PANEL DOCS:", documents);
-
-  if (!documents.length) {
-    list.innerHTML =
-      "<small style='color:#6b7a86'>No documents uploaded by admin yet.</small>";
-    return;
-  }
-
-  list.innerHTML = documents.map(d => `
-    <div style="
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      padding:12px;
-      margin-bottom:10px;
-      border:1px solid #dceaf5;
-      border-radius:10px;
-      background:#fff
-    ">
-      <span>${PANEL_DOC_LABELS[d.doc_type] || d.doc_type}</span>
-      <button
-        class="download-pill"
-        onclick="window.open(
-          'https://drive.google.com/file/d/${d.drive_file_id}/view',
-          '_blank'
-        )"
-      >
-        View
-      </button>
-    </div>
-  `).join("");
-}
-
-/* ================= INIT ================= */
-document.addEventListener("DOMContentLoaded", loadAdminUploadedDocs);
-</script> -->
 
 <script>
 /* ================= AUTH + GLOBALS ================= */
@@ -450,12 +273,6 @@ function logoutUser() {
 <script>
 console.log("SCRIPT LOADED");
 
-const PANEL_DOC_LABELS = {
-  "Document 01": "Document 01",
-  "Document 02": "Document 02",
-  "Document 03": "Document 03",
-};
-
 async function loadAdminUploadedDocs() {
   console.log("loadAdminUploadedDocs() CALLED");
 
@@ -471,9 +288,9 @@ async function loadAdminUploadedDocs() {
 
   let res;
   try {
-    console.log("➡️ calling /api/upload/admin-panel-docs");
+    console.log("➡️ calling /api/upload/admin-documents");
 
-    res = await fetch("/api/upload/admin-panel-docs", {
+    res = await fetch("/api/upload/admin-documents", {
       headers: {
         Authorization: "Bearer " + token
       }
@@ -526,7 +343,7 @@ async function loadAdminUploadedDocs() {
         border-radius:10px;
         background:#fff
       ">
-        <span>${PANEL_DOC_LABELS[d.doc_type] || d.doc_type}</span>
+        <span>${d.doc_label}</span>
         <button
           class="download-pill"
           onclick="window.open(
@@ -546,9 +363,6 @@ document.addEventListener("DOMContentLoaded", () => {
   loadAdminUploadedDocs();
 });
 </script>
-
-
-
 
 </body>
 </html>
