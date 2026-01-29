@@ -298,7 +298,7 @@
           <table class="doc-table">
             <thead>
               <tr>
-                <th>Document Approval Status</th>
+                <th>Personal Document Approval Status</th>
                 <th>Approve</th>
                 <th>Reject</th>
               </tr>
@@ -311,20 +311,58 @@
           <p><b>Approval & Timeline</b></p>
 
           <div class="timeline-control">
-            <button onclick="decrementTimeline()">-</button>
-            <span id="timelineValue">0</span>
-            <button onclick="incrementTimeline()">+</button>
+            <button onclick="decPersonalTimeline()">-</button>
+            <span id="personalTimelineValue">0</span>
+            <button onclick="incPersonalTimeline()">+</button>
           </div>
 
-          <button class="approve-filing-btn" onclick="approveForFiling()">
+          <!-- <button class="approve-filing-btn" onclick="approveForFiling()">
             Approve for filing
-          </button>
+          </button> -->
+          <!-- Personal -->
+<button class="approve-filing-btn" onclick="sendPersonalMail()">
+  Send Personal Approval Mail
+</button>
         </div>
       </div>
+
+      <div class="approval-panel" style="margin-top:24px">
+        <div class="doc-table-box">
+          <table class="doc-table">
+            <thead>
+              <tr>
+                <th>Business Document Approval Status</th>
+                <th>Approve</th>
+                <th>Reject</th>
+              </tr>
+            </thead>
+            <tbody id="businessDocTable"></tbody>
+          </table>
+        </div>
+
+        <div class="timeline-box">
+          <p><b>Approval & Timeline</b></p>
+
+          <div class="timeline-control">
+            <button onclick="decBusinessTimeline()">-</button>
+            <span id="businessTimelineValue">0</span>
+            <button onclick="incBusinessTimeline()">+</button>
+          </div>
+
+          <!-- <button class="approve-filing-btn" onclick="approveForFiling()">
+            Approve for filing
+          </button> -->
+          <!-- Business -->
+<button class="approve-filing-btn" onclick="sendBusinessMail()">
+  Send Business Approval Mail
+</button>
+        </div>
+      </div>
+
     </div>
 
     <section class="container" style="margin-bottom: 40px">
-      <h3 style="margin-bottom: 16px; color: #0077c8">Document Upload Panel</h3>
+      <h3 style="margin-bottom: 16px; color: #0077c8">Returns for user review</h3>
 
       <div id="docPanel" class="upload-list"></div>
 
@@ -349,265 +387,68 @@
       <small>© 2026 Bookkeepro Business Solutions</small>
     </div>
 
-    <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        loadUserDetails();
-        loadAdminDocs();
-      });
+<script>
 
-      async function submitDocumentsForReview() {
-        if (!confirm("Submit all uploaded documents for user review?")) return;
-
-        const res = await fetch("/api/review/submit", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + window.AUTH_TOKEN,
-          },
-          body: JSON.stringify({
-            user_id: userId,
-          }),
-        });
-
-        if (!res.ok) {
-          alert("❌ Failed to submit documents. Please try again.");
-          return;
-        }
-
-        const data = await res.json();
-
-        if (data.email_sent) {
-          alert(
-            "✅ Documents submitted successfully.\n📧 Email sent to the user.",
-          );
-        } else {
-          alert(
-            "⚠️ Documents submitted, but email could NOT be sent.\n" +
-              "Please notify the user manually or retry later.",
-          );
-        }
-      }
-    </script>
-
-    <script>
-      window.AUTH_TOKEN = localStorage.getItem("token");
-      window.AUTH_ROLE = localStorage.getItem("role");
-    </script>
-
-    <script>
-      /* ================= AUTH + GLOBALS ================= */
-      const params = new URLSearchParams(window.location.search);
-      const userId = params.get("user_id");
-
-      const token = window.AUTH_TOKEN;
-      const role = window.AUTH_ROLE;
-
-      if (!token || role !== "admin" || !userId) {
-        localStorage.clear();
-        window.location.href = "/login";
-      }
-
-      /* ================= REVIEW STATE ================= */
-      const REVIEW_KEY = `docReviewState_${userId}`;
-      let reviewState = {};
-      let timeline = 0;
-
-      /* ================= TIMELINE ================= */
-      window.incrementTimeline = () => {
-        timeline++;
-        timelineValue.textContent = timeline;
-      };
-
-      window.decrementTimeline = () => {
-        if (timeline > 0) timeline--;
-        timelineValue.textContent = timeline;
-      };
-
-      /* ================= LOAD USER DETAILS ================= */
-//       async function loadUserDetails() {
-//   reviewState = JSON.parse(localStorage.getItem(REVIEW_KEY) || "{}");
-
-//   const res = await fetch(`/api/upload/admin/users/${userId}/documents`,{
-//     headers: { Authorization: "Bearer " + token },
-//   });
-
-//   if (!res.ok) {
-//     alert("Failed to load user documents");
-//     return;
-//   }
-
-//   const { user = {}, documents = [] } = await res.json();
-
-//         // ===== USER INFO =====
-//         detailName.textContent = user.name || "—";
-//         detailRole.textContent = user.role || "—";
-//         detailEmail.textContent = user.email || "—";
-
-//         // ===== RESET UI =====
-//         docTable.innerHTML = "";
-//         engagementBox.style.display = "none";
-
-//         const personalDocs = [];
-//         const businessDocs = [];
+/* ================= AUTH + GLOBALS ================= */
+const params = new URLSearchParams(window.location.search);
+const userId = params.get("user_id");
+const STATE_KEY = `review_state_${userId}`;
 
 
-//         // ===== SPLIT DOC TYPES =====
-//         documents.forEach((d) => {
-//           if (
-//   d.doc_type &&
-//   d.doc_type.toLowerCase().includes("engagement")
-// ) {
-//             engagementBox.style.display = "flex";
-//             engagementViewBtn.onclick = () =>
-//               window.open(
-//                 `https://drive.google.com/file/d/${d.drive_file_id}/view`,
-//                 "_blank",
-//               );
-//           } else {
-//             normalDocs.push(d);
-//           }
-//         });
+const token = localStorage.getItem("token");
+const role  = localStorage.getItem("role");
 
-//         // ===== STATUS COUNT =====
-//         uploadStatus.textContent = `${normalDocs.length} user docs`;
 
-//         // ===== EMPTY STATE =====
-//         if (!normalDocs.length) {
-//           docTable.innerHTML = `
-//       <tr>
-//         <td colspan="3" style="text-align:center;color:#6b7a86">
-//           No other documents uploaded
-//         </td>
-//       </tr>`;
-//           return;
-//         }
+/* ================= DOM READY ================= */
 
-//         // ===== RENDER TABLE =====
-//         normalDocs.forEach((d, i) => {
-//           const state = reviewState[d.drive_file_id] || null;
+document.addEventListener("DOMContentLoaded", () => {
 
-//           const tr = document.createElement("tr");
-//           tr.innerHTML = `
-//       <td>
-//         ${i + 1}. ${d.filename}
-//         <button class="view-btn">View</button>
-//       </td>
-//       <td><input type="checkbox" class="approve"></td>
-//       <td><input type="checkbox" class="reject"></td>
-//     `;
+  if (!token || role !== "admin" || !userId) {
+    localStorage.clear();
+    window.location.href = "/login";
+  }
 
-//           const approve = tr.querySelector(".approve");
-//           const reject = tr.querySelector(".reject");
+  /* ================= DOM REFS ================= */
+  window.detailName  = document.getElementById("detailName");
+  window.detailRole  = document.getElementById("detailRole");
+  window.detailEmail = document.getElementById("detailEmail");
+  window.docPanel    = document.getElementById("docPanel");
 
-//           approve.checked = state?.status === "approved";
-//           reject.checked = state?.status === "rejected";
+  window.docTable         = document.getElementById("docTable");
+  window.businessDocTable = document.getElementById("businessDocTable");
+  window.uploadStatus     = document.getElementById("uploadStatus");
+  window.engagementBox    = document.getElementById("engagementBox");
+  window.engagementViewBtn= document.getElementById("engagementViewBtn");
 
-//           approve.onchange = () =>
-//             updateState(
-//               d.drive_file_id,
-//               approve,
-//               reject,
-//               "approved",
-//               d.original_name || d.filename,
-//             );
+  loadSavedState();
+  loadUserDetails();
+  loadAdminDocs();
 
-//           reject.onchange = () =>
-//             updateState(
-//               d.drive_file_id,
-//               reject,
-//               approve,
-//               "rejected",
-//               d.original_name || d.filename,
-//             );
+});
 
-//           tr.querySelector(".view-btn").onclick = () =>
-//             window.open(
-//               `https://drive.google.com/file/d/${d.drive_file_id}/view`,
-//               "_blank",
-//             );
 
-//           docTable.appendChild(tr);
-//         });
-//       }
+/* ================= DOM REFS ================= */
 
-// async function loadUserDetails() {
-//   reviewState = JSON.parse(localStorage.getItem(REVIEW_KEY) || "{}");
+/* ================= STATE ================= */
+const personalReviewState = {};
+const businessReviewState = {};
 
-//   const res = await fetch(
-//     `/api/upload/admin/users/${userId}/documents`,
-//     { headers: { Authorization: "Bearer " + token } }
-//   );
+function loadSavedState() {
+  const raw = localStorage.getItem(STATE_KEY);
+  if (!raw) return;
 
-//   if (!res.ok) {
-//     alert("Failed to load user documents");
-//     return;
-//   }
+  try {
+    const saved = JSON.parse(raw);
+    Object.assign(personalReviewState, saved.personal || {});
+    Object.assign(businessReviewState, saved.business || {});
+  } catch (e) {
+    console.warn("Failed to restore review state");
+  }
+}
 
-//   const { user = {}, documents = [] } = await res.json();
-
-//   /* ===== USER INFO ===== */
-//   detailName.textContent = user.name || "—";
-//   detailRole.textContent = user.role || "—";
-//   detailEmail.textContent = user.email || "—";
-
-//   /* ===== RESET UI ===== */
-//   docTable.innerHTML = "";
-//   businessDocTable.innerHTML = "";
-//   engagementBox.style.display = "none";
-
-//   const personalDocs = [];
-//   const businessDocs = [];
-
-//   /* ===== SPLIT DOC TYPES ===== */
-//   documents.forEach((d) => {
-//     if (
-//       d.doc_type &&
-//       d.doc_type.toLowerCase().includes("engagement")
-//     ) {
-//       engagementBox.style.display = "flex";
-//       engagementViewBtn.onclick = () =>
-//         window.open(
-//           `https://drive.google.com/file/d/${d.drive_file_id}/view`,
-//           "_blank"
-//         );
-//       return;
-//     }
-
-//     if (d.table === "personal") personalDocs.push(d);
-//     if (d.table === "business") businessDocs.push(d);
-//   });
-
-//   /* ===== STATUS COUNT ===== */
-//   uploadStatus.textContent = `${personalDocs.length + businessDocs.length} user docs`;
-
-//   /* ===== EMPTY STATES ===== */
-//   if (!personalDocs.length) {
-//     docTable.innerHTML = `
-//       <tr>
-//         <td colspan="3" style="text-align:center;color:#6b7a86">
-//           No personal documents uploaded
-//         </td>
-//       </tr>`;
-//   }
-
-//   if (!businessDocs.length) {
-//     businessDocTable.innerHTML = `
-//       <tr>
-//         <td colspan="3" style="text-align:center;color:#6b7a86">
-//           No business documents uploaded
-//         </td>
-//       </tr>`;
-//   }
-
-//   /* ===== RENDER PERSONAL DOCS ===== */
-//   personalDocs.forEach((d, i) => renderRow(d, i, docTable));
-
-//   /* ===== RENDER BUSINESS DOCS ===== */
-//   businessDocs.forEach((d, i) => renderRow(d, i, businessDocTable));
-// }
-
+/* ================= LOAD USER + DOCS ================= */
 async function loadUserDetails() {
-  reviewState = JSON.parse(localStorage.getItem(REVIEW_KEY) || "{}");
+  loadSavedState();
 
   const res = await fetch(
     `/api/upload/admin/users/${userId}/documents`,
@@ -621,19 +462,20 @@ async function loadUserDetails() {
 
   const { user = {}, documents = [] } = await res.json();
 
-  /* ===== USER INFO ===== */
-  detailName.textContent = user.name || "—";
-  detailRole.textContent = user.role || "—";
+  /* USER INFO */
+  detailName.textContent  = user.name  || "—";
+  detailRole.textContent  = user.role  || "—";
   detailEmail.textContent = user.email || "—";
 
-  /* ===== RESET UI ===== */
+  /* RESET */
   docTable.innerHTML = "";
+  businessDocTable.innerHTML = "";
   engagementBox.style.display = "none";
 
   const personalDocs = [];
+  const businessDocs = [];
 
-  /* ===== FILTER PERSONAL DOCS ===== */
-  documents.forEach((d) => {
+  documents.forEach(d => {
     if (d.doc_type?.toLowerCase().includes("engagement")) {
       engagementBox.style.display = "flex";
       engagementViewBtn.onclick = () =>
@@ -645,115 +487,54 @@ async function loadUserDetails() {
     }
 
     if (d.table === "personal") personalDocs.push(d);
+    if (d.table === "business") businessDocs.push(d);
   });
 
-  uploadStatus.textContent = `${personalDocs.length} user docs`;
+  /* COUNTER */
+  uploadStatus.textContent =
+    `${personalDocs.length} personal • ${businessDocs.length} business`;
 
-  /* ===== EMPTY STATE ===== */
-  if (!personalDocs.length) {
-    docTable.innerHTML = `
-      <tr>
-        <td colspan="3" style="text-align:center;color:#6b7a86">
-          No personal documents uploaded
-        </td>
-      </tr>`;
+  /* PERSONAL DOCS */
+  personalDocs.forEach((d, i) =>
+    renderRow(
+      d,
+      i,
+      docTable,
+      personalReviewState,
+      updatePersonalState
+    )
+  );
+
+
+  /* BUSINESS DOCS */
+  if (!businessDocs.length) {
+    businessDocTable.innerHTML =
+      `<tr><td colspan="3" style="text-align:center;color:#6b7a86">
+        No business documents uploaded
+      </td></tr>`;
     return;
   }
 
-  /* ===== RENDER PERSONAL DOCS ===== */
-  personalDocs.forEach((d, i) => {
-    const state = reviewState[d.drive_file_id] || {};
-
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>
-        ${i + 1}. ${d.filename}
-        <div class="small-muted">${d.doc_type || "Personal Document"}</div>
-        <button class="view-btn">View</button>
-      </td>
-      <td><input type="checkbox" class="approve"></td>
-      <td><input type="checkbox" class="reject"></td>
-    `;
-
-    const approve = tr.querySelector(".approve");
-    const reject = tr.querySelector(".reject");
-
-    approve.checked = state.status === "approved";
-    reject.checked = state.status === "rejected";
-
-    approve.onchange = () =>
-      updateState(d.drive_file_id, approve, reject, "approved", d.filename);
-
-    reject.onchange = () =>
-      updateState(d.drive_file_id, reject, approve, "rejected", d.filename);
-
-    tr.querySelector(".view-btn").onclick = () =>
-      window.open(
-        `https://drive.google.com/file/d/${d.drive_file_id}/view`,
-        "_blank"
-      );
-
-    docTable.appendChild(tr);
-  });
+  businessDocs.forEach((d, i) =>
+    renderRow(
+      d,
+      i,
+      businessDocTable,
+      businessReviewState,
+      updateBusinessState
+    )
+  );
 }
 
-
-function renderDocTable(tbody, docs, icon) {
-  if (!docs.length) {
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="3" style="text-align:center;color:#6b7a86">
-          No documents uploaded
-        </td>
-      </tr>`;
-    return;
-  }
-
-  docs.forEach((d, i) => {
-    const state = reviewState[d.drive_file_id] || {};
-
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>
-        ${i + 1}. ${d.filename}
-        <div class="small-muted">${icon} ${d.doc_type || ""}</div>
-        <button class="view-btn">View</button>
-      </td>
-      <td><input type="checkbox" class="approve"></td>
-      <td><input type="checkbox" class="reject"></td>
-    `;
-
-    const approve = tr.querySelector(".approve");
-    const reject = tr.querySelector(".reject");
-
-    approve.checked = state.status === "approved";
-    reject.checked = state.status === "rejected";
-
-    approve.onchange = () =>
-      updateState(d.drive_file_id, approve, reject, "approved", d.filename);
-
-    reject.onchange = () =>
-      updateState(d.drive_file_id, reject, approve, "rejected", d.filename);
-
-    tr.querySelector(".view-btn").onclick = () =>
-      window.open(
-        `https://drive.google.com/file/d/${d.drive_file_id}/view`,
-        "_blank"
-      );
-
-    tbody.appendChild(tr);
-  });
-}
-
-
-function renderRow(d, index, tableEl) {
-  const state = reviewState[d.drive_file_id] || null;
+/* ================= ROW RENDER ================= */
+function renderRow(doc, index, table, stateStore, updateFn) {
+  const state = stateStore[doc.drive_file_id] || {};
 
   const tr = document.createElement("tr");
   tr.innerHTML = `
     <td>
-      ${index + 1}. ${d.filename}
-      <div class="small-muted">${d.doc_type || "Document"}</div>
+      ${index + 1}. ${doc.filename}
+      <div class="small-muted">${doc.doc_type || ""}</div>
       <button class="view-btn">View</button>
     </td>
     <td><input type="checkbox" class="approve"></td>
@@ -761,253 +542,208 @@ function renderRow(d, index, tableEl) {
   `;
 
   const approve = tr.querySelector(".approve");
-  const reject = tr.querySelector(".reject");
+  const reject  = tr.querySelector(".reject");
 
-  approve.checked = state?.status === "approved";
-  reject.checked = state?.status === "rejected";
+  approve.checked = state.status === "approved";
+  reject.checked  = state.status === "rejected";
 
   approve.onchange = () =>
-    updateState(
-      d.drive_file_id,
-      approve,
-      reject,
-      "approved",
-      d.filename
-    );
+    updateFn(doc.drive_file_id, approve, reject, "approved", doc.filename);
 
   reject.onchange = () =>
-    updateState(
-      d.drive_file_id,
-      reject,
-      approve,
-      "rejected",
-      d.filename
-    );
+    updateFn(doc.drive_file_id, reject, approve, "rejected", doc.filename);
 
   tr.querySelector(".view-btn").onclick = () =>
     window.open(
-      `https://drive.google.com/file/d/${d.drive_file_id}/view`,
+      `https://drive.google.com/file/d/${doc.drive_file_id}/view`,
       "_blank"
     );
 
-  tableEl.appendChild(tr);
+  table.appendChild(tr);
+}
+
+/* ================= STATE UPDATERS ================= */
+function updatePersonalState(id, active, other, status, name) {
+  if (active.checked) {
+    other.checked = false;
+    personalReviewState[id] = { status, name };
+  } else {
+    delete personalReviewState[id];
+  }
+
+  localStorage.setItem(
+    STATE_KEY,
+    JSON.stringify({
+      personal: personalReviewState,
+      business: businessReviewState
+    })
+  );
+}
+
+ //myfunc
+  function extractDocs(state) {
+  const approved = [];
+  const rejected = [];
+
+  Object.values(state).forEach(d => {
+    if (d.status === "approved") approved.push(d.name);
+    if (d.status === "rejected") rejected.push(d.name);
+  });
+
+  return { approved, rejected };
+}
+
+async function sendPersonalMail() {
+  const { approved, rejected } = extractDocs(personalReviewState);
+
+  if (!approved.length && !rejected.length) {
+    alert("No personal documents selected.");
+    return;
+  }
+
+  const timeline = approved.length;
+
+  const res = await fetch("/api/review/notify-user", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token
+    },
+    body: JSON.stringify({
+      user_id: userId,
+      type: "personal",              // 👈 IMPORTANT
+      approved,
+      rejected,
+      personal_timeline: timeline,
+      business_timeline: 0
+    })
+  });
+
+  if (!res.ok) {
+    alert("Failed to send personal mail");
+    return;
+  }
+
+  alert("Personal approval email sent");
+}
+
+async function sendBusinessMail() {
+  const { approved, rejected } = extractDocs(businessReviewState);
+
+  if (!approved.length && !rejected.length) {
+    alert("No business documents selected.");
+    return;
+  }
+
+  const timeline = approved.length;
+
+  const res = await fetch("/api/review/notify-user", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token
+    },
+    body: JSON.stringify({
+      user_id: userId,
+      type: "business",              // 👈 IMPORTANT
+      approved,
+      rejected,
+      personal_timeline: 0,
+      business_timeline: timeline
+    })
+  });
+
+  if (!res.ok) {
+    alert("Failed to send business mail");
+    return;
+  }
+
+  alert("Business approval email sent");
 }
 
 
-      function updateState(fileId, active, other, value, name) {
-        if (active.checked) {
-          other.checked = false;
-          reviewState[fileId] = { status: value, name };
-        } else {
-          delete reviewState[fileId];
-        }
-        localStorage.setItem(REVIEW_KEY, JSON.stringify(reviewState));
-      }
 
-      /* ================= NAV ================= */
-      window.goBack = () => (window.location.href = "/admin-dashboard");
-    </script>
+function updateBusinessState(id, active, other, status, name) {
+  if (active.checked) {
+    other.checked = false;
+    businessReviewState[id] = { status, name };
+  } else {
+    delete businessReviewState[id];
+  }
 
-    <script>
-      async function approveForFiling() {
-        if (!confirm("Send approval email to user?")) return;
+  localStorage.setItem(
+    STATE_KEY,
+    JSON.stringify({
+      personal: personalReviewState,
+      business: businessReviewState
+    })
+  );
+}
 
-        const approved = [];
-        const rejected = [];
+/* ================= TIMELINE ================= */
 
-        Object.values(reviewState).forEach((item) => {
-          if (item.status === "approved") approved.push(item.name);
-          if (item.status === "rejected") rejected.push(item.name);
-        });
+let personalTimeline = 0;
+let businessTimeline = 0;
 
-        if (!approved.length && !rejected.length) {
-          alert("Please approve or reject at least one document.");
-          return;
-        }
+window.incPersonalTimeline = function () {
+  personalTimeline++;
+  const el = document.getElementById("personalTimelineValue");
+  if (el) el.textContent = personalTimeline;
+};
 
-        const res = await fetch("/api/review/notify-user", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + window.AUTH_TOKEN,
-          },
-          body: JSON.stringify({
-            user_id: userId,
-            approved,
-            rejected,
-            timeline,
-          }),
-        });
+window.decPersonalTimeline = function () {
+  if (personalTimeline > 0) personalTimeline--;
+  const el = document.getElementById("personalTimelineValue");
+  if (el) el.textContent = personalTimeline;
+};
 
-        if (!res.ok) {
-          alert("Failed to send approval email. Please try again.");
-          return;
-        }
+window.incBusinessTimeline = function () {
+  businessTimeline++;
+  const el = document.getElementById("businessTimelineValue");
+  if (el) el.textContent = businessTimeline;
+};
 
-        localStorage.removeItem(`docReviewState_${userId}`);
-        reviewState = {};
+window.decBusinessTimeline = function () {
+  if (businessTimeline > 0) businessTimeline--;
+  const el = document.getElementById("businessTimelineValue");
+  if (el) el.textContent = businessTimeline;
+};
 
-        alert("Approval email sent successfully.");
-      }
-    </script>
 
-    <script>
-      const panelWrapper = document.getElementById("docPanel");
-      const panelFiles = {};
-      /* ================= RENDER PANEL ================= */
-      function renderPanel() {
-        panelWrapper.innerHTML = "";
+/* ================= NAV ================= */
+window.goBack = () => {
+  window.location.href = "/admin-dashboard";
+};
+</script>
 
-        PANEL_DOCS.forEach((doc, i) => {
-          panelWrapper.innerHTML += `
-      <div class="panel-item">
-        <div class="panel-left">
-          <b>${i + 1}. ${doc.doc_label}</b>
-          <span id="panelStatus${i}" class="small-muted">Not uploaded</span>
-        </div>
+<script>
+  async function loadAdminDocs() {
+  const res = await fetch(
+    `/api/upload/admin-documents?user_id=${userId}`,
+    {
+      headers: { Authorization: "Bearer " + token }
+    }
+  );
 
-        <div class="panel-actions">
-          <label class="upload-label" for="panelFile${i}">Upload</label>
-          <input id="panelFile${i}" type="file" hidden>
+  if (!res.ok) {
+    console.error("Failed to load admin docs");
+    return;
+  }
 
-          <button id="panelView${i}" class="view-btn" style="display:none">View</button>
-          <button id="panelDelete${i}" class="delete-btn" style="display:none">Delete</button>
-        </div>
-      </div>
-    `;
-        });
+  const docs = await res.json();
+  docPanel.innerHTML = "";
 
-        PANEL_DOCS.forEach((_, i) => {
-          document.getElementById(`panelFile${i}`).onchange = () =>
-            uploadPanelDoc(i);
-          document.getElementById(`panelView${i}`).onclick = () =>
-            viewPanelDoc(i);
-          document.getElementById(`panelDelete${i}`).onclick = () =>
-            deletePanelDoc(i);
-        });
-      }
+  if (!docs.length) {
+    docPanel.innerHTML =
+      `<div class="small-muted">No admin documents uploaded</div>`;
+    return;
+  }
 
-      async function deleteAdminDoc(fileId) {
-        if (!confirm("Delete this document?")) return;
+  docs.forEach(doc => {
+    const div = document.createElement("div");
+    div.className = "panel-item";
 
-        const res = await fetch(`/api/upload/admin-document/${fileId}`, {
-          method: "DELETE",
-          headers: { Authorization: "Bearer " + token },
-        });
-
-        if (!res.ok) {
-          alert("Delete failed");
-          return;
-        }
-
-        loadAdminDocs();
-      }
-
-      async function loadPanelDocs() {
-        const res = await fetch("/api/admin/documents", {
-          headers: { Authorization: "Bearer " + token },
-        });
-
-        if (!res.ok) return;
-
-        const docs = await res.json();
-
-        docs.forEach((f) => {
-          const index = PANEL_DOCS.findIndex((d) => d.doc_key === f.doc_key);
-          if (index === -1) return;
-
-          panelFiles[index] = f.drive_file_id;
-          panelStatus(index, "Uploaded ✓");
-          showPanelButtons(index, true);
-        });
-      }
-
-      /* ================= VIEW / DELETE ================= */
-      function viewPanelDoc(i) {
-        const id = panelFiles[i];
-        if (id)
-          window.open(`https://drive.google.com/file/d/${id}/view`, "_blank");
-      }
-
-      async function deletePanelDoc(i) {
-        if (!confirm("Delete this document?")) return;
-
-        const id = panelFiles[i];
-        if (!id) return;
-
-        const res = await fetch(`/api/upload/admin-document/${id}`, {
-          method: "DELETE",
-          headers: { Authorization: "Bearer " + token },
-        });
-
-        if (!res.ok) {
-          alert("Delete failed");
-          return;
-        }
-
-        delete panelFiles[i];
-        panelStatus(i, "Not uploaded");
-        showPanelButtons(i, false);
-        document.getElementById(`panelFile${i}`).value = "";
-      }
-
-      /* ================= HELPERS ================= */
-      function panelStatus(i, text) {
-        document.getElementById(`panelStatus${i}`).textContent = text;
-      }
-
-      function showPanelButtons(i, show) {
-        document.getElementById(`panelView${i}`).style.display = show
-          ? "inline-block"
-          : "none";
-        document.getElementById(`panelDelete${i}`).style.display = show
-          ? "inline-block"
-          : "none";
-      }
-
-      window.addEventListener("beforeunload", () => {
-        if (refresh) clearInterval(refresh);
-      });
-
-      document.getElementById("adminDocInput").onchange = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        const fd = new FormData();
-        fd.append("file", file);
-        fd.append("doc_key", file.name.toLowerCase().replace(/\s+/g, "_"));
-        fd.append("doc_label", file.name);
-
-        const res = await fetch("/api/upload/admin-documents", {
-          method: "POST",
-          headers: { Authorization: "Bearer " + token },
-          body: fd,
-        });
-
-        if (!res.ok) {
-          alert("Upload failed");
-          return;
-        }
-
-        e.target.value = "";
-        loadAdminDocs();
-      };
-
-      async function loadAdminDocs() {
-        const res = await fetch("/api/upload/admin-documents", {
-          headers: { Authorization: "Bearer " + token },
-        });
-
-        if (!res.ok) return;
-
-        const docs = await res.json();
-        docPanel.innerHTML = "";
-
-        docs.forEach((doc) => {
-          const div = document.createElement("div");
-          div.className = "panel-item";
-
-          div.innerHTML = `
+    div.innerHTML = `
       <div class="panel-left">
         <b>${doc.doc_label}</b>
         <span class="small-muted">${doc.filename}</span>
@@ -1018,34 +754,213 @@ function renderRow(d, index, tableEl) {
       </div>
     `;
 
-          div.querySelector(".view-btn").onclick = () =>
-            window.open(
-              `https://drive.google.com/file/d/${doc.drive_file_id}/view`,
-              "_blank",
-            );
+    div.querySelector(".view-btn").onclick = () =>
+      window.open(
+        `https://drive.google.com/file/d/${doc.drive_file_id}/view`,
+        "_blank"
+      );
 
-          div.querySelector(".delete-btn").onclick = () =>
-            deleteAdminDoc(doc.id);
+    div.querySelector(".delete-btn").onclick = async () => {
+      if (!confirm("Delete this admin document?")) return;
 
-          docPanel.appendChild(div);
-        });
-      }
+      await fetch(`/api/upload/admin-documents/${doc.id}`, {
+        method: "DELETE",
+        headers: { Authorization: "Bearer " + token }
+      });
 
-      async function deleteAdminDoc(id) {
-        if (!confirm("Delete this admin document?")) return;
+      loadAdminDocs();
+    };
 
-        const res = await fetch(`/api/upload/admin-documents/${id}`, {
-          method: "DELETE",
-          headers: { Authorization: "Bearer " + token },
-        });
+    docPanel.appendChild(div);
+  });
+}
 
-        if (!res.ok) {
-          alert("Delete failed");
-          return;
-        }
+</script>
 
-        loadAdminDocs();
+<script>
+async function uploadAdminDocument(file) {
+  const fd = new FormData();
+  fd.append("file", file);
+  fd.append("doc_key", file.name.toLowerCase().replace(/\s+/g, "_"));
+  fd.append("doc_label", file.name);
+  fd.append("user_id", userId); 
+
+  const res = await fetch("/api/upload/admin-documents", {
+    method: "POST",
+    headers: {
+      Authorization: "Bearer " + token
+    },
+    body: fd
+  });
+
+  if (!res.ok) {
+    alert("Admin document upload failed");
+    return;
+  }
+
+  loadAdminDocs(); // refresh panel
+}
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const input = document.getElementById("adminDocInput");
+
+  if (!input) {
+    console.error("adminDocInput not found");
+    return;
+  }
+
+  input.addEventListener("change", async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const fd = new FormData();
+    fd.append("file", file);                       // ✅ REQUIRED
+    fd.append("doc_key", file.name.toLowerCase().replace(/\s+/g, "_"));
+    fd.append("doc_label", file.name);
+    fd.append("user_id", userId);                  // ✅ REQUIRED
+
+    const res = await fetch("/api/upload/admin-documents", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + token           // ❌ DO NOT set Content-Type
+      },
+      body: fd
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      console.error(text);
+      alert("Admin document upload failed");
+      return;
+    }
+
+    e.target.value = ""; // allow re-upload
+    loadAdminDocs();
+  });
+});
+</script>
+
+
+
+<!-- Review email send  -->
+<script>
+
+function calculateTimelines() {
+  const personal = Object.values(personalReviewState)
+    .filter(d => d.status === "approved").length;
+
+  const business = Object.values(businessReviewState)
+    .filter(d => d.status === "approved").length;
+
+  return { personal, business };
+}
+
+
+async function approveForFiling() {
+  if (!confirm("Send approval email to user?")) return;
+
+  const approved = [];
+  const rejected = [];
+
+  Object.values(personalReviewState).forEach(d => {
+    if (d.status === "approved") approved.push(d.name);
+    if (d.status === "rejected") rejected.push(d.name);
+  });
+
+  Object.values(businessReviewState).forEach(d => {
+    if (d.status === "approved") approved.push(d.name);
+    if (d.status === "rejected") rejected.push(d.name);
+  });
+
+  if (!approved.length && !rejected.length) {
+    alert("Please approve or reject at least one document.");
+    return;
+  }
+
+  /* ✅ THIS WAS MISSING */
+    const { personal, business } = calculateTimelines();
+
+    const res = await fetch("/api/review/notify-user", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token
+      },
+      body: JSON.stringify({
+        user_id: userId,
+        approved,
+        rejected,
+        personal_timeline: personal,
+        business_timeline: business
+      })
+    });
+
+
+
+  if (!res.ok) {
+    alert("Failed to send approval email");
+    return;
+  }
+
+  alert("Approval email sent successfully");
+}
+
+
+</script>
+
+<script>
+async function submitDocumentsForReview() {
+  if (!confirm("Submit all documents for review?")) return;
+
+  try {
+    const res = await fetch("/api/review/submit", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token
+      },
+      body: JSON.stringify({
+        user_id: userId
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      alert(err.detail || "Failed to submit documents");
+      return;
+    }
+
+    const data = await res.json();
+
+    if (data.email_sent) {
+      alert(
+        "✅ Documents submitted successfully.\n📧 Email sent to the user."
+      );
+    } else {
+      alert(
+        "⚠️ Documents submitted, but email could NOT be sent.\n" +
+        "Please notify the user manually."
+      );
+    }
+
+  } catch (err) {
+    console.error(err);
+    alert("Unexpected error while submitting documents.");
+  }
+}
+</script>
+
+
+<script>
+      function logoutUser() {
+        localStorage.removeItem("token");
+        localStorage.removeItem("role");
+        localStorage.removeItem("checklistDownloaded");
+        window.location.href = "/login";
       }
     </script>
-  </body>
+
+</body>
 </html>

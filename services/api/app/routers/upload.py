@@ -100,15 +100,47 @@ def get_drive_service():
 
 #  drive_id = await upload_to_drive(file)
 
+# @router.post("/admin-documents")
+# async def upload_admin_document(
+#     file: UploadFile = File(...),
+#     doc_key: str = Form(...),
+#     doc_label: str = Form(...),
+#     db: Session = Depends(get_db),
+#     current_user=Depends(get_current_user_real),
+# ):
+
+#     drive_id = await upload_to_drive(file)
+
+#     record = AdminDocument(
+#         doc_key=doc_key,
+#         doc_label=doc_label,
+#         filename=file.filename,
+#         drive_file_id=drive_id,
+#         content_type=file.content_type,
+#         uploaded_by=current_user.id,
+#     )
+
+#     db.add(record)
+#     db.commit()
+#     db.refresh(record)
+
+#     return {
+#         "id": record.id,
+#         "doc_key": record.doc_key,
+#         "doc_label": record.doc_label,
+#         "filename": record.filename,
+#         "drive_file_id": record.drive_file_id,
+#     }
+
 @router.post("/admin-documents")
 async def upload_admin_document(
     file: UploadFile = File(...),
     doc_key: str = Form(...),
     doc_label: str = Form(...),
+    user_id: int = Form(...),          # 👈 add
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user_real),
 ):
-
     drive_id = await upload_to_drive(file)
 
     record = AdminDocument(
@@ -117,7 +149,8 @@ async def upload_admin_document(
         filename=file.filename,
         drive_file_id=drive_id,
         content_type=file.content_type,
-        uploaded_by=current_user.id,
+        uploaded_by=current_user.id,   # admin
+        user_id=user_id,               # 👈 target user
     )
 
     db.add(record)
@@ -126,27 +159,91 @@ async def upload_admin_document(
 
     return {
         "id": record.id,
-        "doc_key": record.doc_key,
         "doc_label": record.doc_label,
         "filename": record.filename,
         "drive_file_id": record.drive_file_id,
     }
 
 
+
+# @router.get("/admin-documents")
+# def list_admin_documents(
+#     db: Session = Depends(get_db),
+#     current_user=Depends(get_current_user_real),
+# ):
+#     # allow BOTH user and admin
+#     if current_user.jwt_role not in ("admin", "user"):
+#         raise HTTPException(status_code=403, detail="Unauthorized")
+
+#     docs = (
+#         db.query(AdminDocument)
+#         .order_by(AdminDocument.uploaded_at.desc())
+#         .all()
+#     )
+
+#     return [
+#         {
+#             "id": d.id,
+#             "doc_key": d.doc_key,
+#             "doc_label": d.doc_label,
+#             "filename": d.filename,
+#             "drive_file_id": d.drive_file_id,
+#         }
+#         for d in docs
+#     ]
+
+# @router.get("/admin-documents")
+# def list_admin_documents(
+#     db: Session = Depends(get_db),
+#     current_user=Depends(get_current_user_real),
+# ):
+#     # Admin sees documents for selected user (via query param)
+#     if current_user.jwt_role == "admin":
+#         return (
+#             db.query(AdminDocument)
+#             .order_by(AdminDocument.uploaded_at.desc())
+#             .all()
+#         )
+
+#     # User sees ONLY documents uploaded for them
+#     return (
+#         db.query(AdminDocument)
+#         .filter(AdminDocument.user_id == current_user.id)
+#         .order_by(AdminDocument.uploaded_at.desc())
+#         .all()
+#     )
+
+
 @router.get("/admin-documents")
 def list_admin_documents(
+    user_id: int | None = None,          # 👈 IMPORTANT
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user_real),
 ):
-    # allow BOTH user and admin
-    if current_user.jwt_role not in ("admin", "user"):
-        raise HTTPException(status_code=403, detail="Unauthorized")
+    if current_user.jwt_role == "admin":
+        if not user_id:
+            raise HTTPException(
+                status_code=400,
+                detail="user_id is required for admin"
+            )
 
-    docs = (
-        db.query(AdminDocument)
-        .order_by(AdminDocument.uploaded_at.desc())
-        .all()
-    )
+        docs = (
+            db.query(AdminDocument)
+            .filter(AdminDocument.user_id == user_id)
+            .order_by(AdminDocument.uploaded_at.desc())
+            .all()
+        )
+
+    elif current_user.jwt_role == "user":
+        docs = (
+            db.query(AdminDocument)
+            .filter(AdminDocument.user_id == current_user.id)
+            .order_by(AdminDocument.uploaded_at.desc())
+            .all()
+        )
+
+    else:
+        raise HTTPException(status_code=403, detail="Unauthorized")
 
     return [
         {
@@ -158,6 +255,7 @@ def list_admin_documents(
         }
         for d in docs
     ]
+
 
 
 @router.delete("/admin-documents/{doc_id}")
@@ -184,37 +282,6 @@ def delete_admin_document(
 
 
 from app.models import PersonalDocument
-
-@router.post("/personal-documents")
-async def upload_personal_document(
-    file: UploadFile = File(...),
-    doc_type: str = Form(...),   # ✅ ADD THIS
-    db: Session = Depends(get_db),
-    current_user=Depends(get_current_user_real),
-):
-
-    drive_id = await upload_to_drive(file)
-
-    record = PersonalDocument(
-        user_id=current_user.id,
-        doc_type=doc_type,       # ✅ SAVE THIS
-        filename=file.filename,
-        drive_file_id=drive_id,
-        content_type=file.content_type,
-    )
-
-    db.add(record)
-    db.commit()
-    db.refresh(record)
-
-    return {
-        "id": record.id,
-        "filename": record.filename,
-        "doc_type": record.doc_type,   # ✅ RETURN IT
-        "drive_file_id": record.drive_file_id,
-        "uploaded_at": record.uploaded_at,
-    }
-
 
 @router.get("/personal-documents")
 def list_personal_documents(
@@ -263,52 +330,18 @@ def delete_personal_document(
 
 from app.models import BusinessDocument
 
-@router.post("/business-documents")
-async def upload_business_document(
-    file: UploadFile = File(...),
-    doc_type: str = Form(...),          # ✅ accept this
-    business_type: str | None = Form(None),
-    user_id: int | None = Form(None),
-    db: Session = Depends(get_db),
-    current_user=Depends(get_current_user_real),
-):
-    owner_id = current_user.id
-
-    drive_id = await upload_to_drive(file)
-
-    record = BusinessDocument(
-        user_id=owner_id,
-        business_type=doc_type,          # ✅ STORE DOC NAME HERE
-        filename=file.filename,
-        drive_file_id=drive_id,
-        content_type=file.content_type,
-    )
-
-    db.add(record)
-    db.commit()
-    db.refresh(record)
-
-    return {
-        "id": record.id,
-        "filename": record.filename,
-        "business_type": record.business_type,  # ✅ RETURN IT
-        "drive_file_id": record.drive_file_id,
-    }
-
-
 @router.get("/business-documents")
 def list_business_documents(
-    user_id: int | None = None,
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user_real),
 ):
-    query = db.query(BusinessDocument)
-
     return (
-        query
+        db.query(BusinessDocument)
+        .filter(BusinessDocument.user_id == current_user.id)  # ✅ IMPORTANT
         .order_by(BusinessDocument.uploaded_at.desc())
         .all()
     )
+
 
 
 @router.delete("/business-documents/{doc_id}")
@@ -343,6 +376,8 @@ def get_user_all_documents(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user_real),
 ):
+    if current_user.jwt_role != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
 
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
@@ -351,14 +386,17 @@ def get_user_all_documents(
     personal_docs = (
         db.query(PersonalDocument)
         .filter(PersonalDocument.user_id == user_id)
+        .order_by(PersonalDocument.uploaded_at.desc())
         .all()
     )
 
     business_docs = (
-        db.query(BusinessDocument)
-        .filter(BusinessDocument.user_id == user_id)
-        .all()
-    )
+    db.query(BusinessDocument)
+    .filter(BusinessDocument.user_id == user_id)  # ✅ CORRECT
+    .order_by(BusinessDocument.uploaded_at.desc())
+    .all()
+)
+
 
     documents = []
 
@@ -382,51 +420,53 @@ def get_user_all_documents(
             "uploaded_at": d.uploaded_at,
         })
 
-        return {
-            "user": {
-                "id": user.id,
-                "name": user.name,
-                "email": user.email,
-                "role": user.role,   # ✅ FIXED
-            },
-            "documents": documents,
-        }
+    return {
+        "user": {
+            "id": user.id,
+            "name": user.name,
+            "email": user.email,
+            "role": user.role,
+        },
+        "documents": documents,
+    }
 
 
-
-
-def send_document_upload_email(
+async def send_upload_emails(
     *,
-    to_email: str,
-    doc_name: str,
-    doc_category: str,
-) -> bool:
-    subject = f"New {doc_category} Document Uploaded — BookKeepro"
+    user_email: str,
+    filename: str,
+    doc_category: str,  # "Personal" | "Business"
+):
+    admin_email = os.getenv("ADMIN_EMAIL")
 
-    body = f"""
-Dear Sir/Ma’am,
+    # Email to USER
+    await send_email(
+        to=user_email,
+        subject=f"New {doc_category} Document Uploaded — BookKeepro",
+        body=f"""
+        <p>Dear Sir/Ma’am,</p>
 
-We have successfully received your {doc_category.lower()} document:
+        <p>We have successfully received your {doc_category.lower()} document:</p>
+        <p><strong>{filename}</strong></p>
 
-{doc_name}
+        <p>Our team will review the document and update you shortly.</p>
 
-Our team will review the document and update you on the next steps shortly.
-If any additional information is required, we will contact you promptly.
+        <br>
+        <strong>BookKeepro Team</strong>
+        """,
+    )
 
-Kind regards,
-The BookKeepro Team
-"""
-
-    try:
-        send_email(
-            to_email=to_email,
-            subject=subject,
-            body=body,
+    # Email to ADMIN
+    if admin_email:
+        await send_email(
+            to=admin_email,
+            subject=f"New {doc_category} Document Uploaded — BookKeepro",
+            body=f"""
+            <p>User <strong>{user_email}</strong> uploaded a {doc_category.lower()} document.</p>
+            <p><strong>File:</strong> {filename}</p>
+            """,
         )
-        return True
-    except Exception as e:
-        logger.exception("Email send failed")
-        return False
+
 
 @router.post("/personal-documents")
 async def upload_personal_document(
@@ -449,9 +489,9 @@ async def upload_personal_document(
     db.commit()
     db.refresh(record)
 
-    email_sent = send_document_upload_email(
-        to_email=current_user.email,
-        doc_name=file.filename,
+    await send_upload_emails(
+        user_email=current_user.email,
+        filename=file.filename,
         doc_category="Personal",
     )
 
@@ -461,9 +501,18 @@ async def upload_personal_document(
         "doc_type": record.doc_type,
         "drive_file_id": record.drive_file_id,
         "uploaded_at": record.uploaded_at,
-        "email_sent": email_sent,   # ✅ IMPORTANT
+        "email_sent": True,
     }
 
+
+    return {
+        "id": record.id,
+        "filename": record.filename,
+        "doc_type": record.doc_type,
+        "drive_file_id": record.drive_file_id,
+        "uploaded_at": record.uploaded_at,
+        "email_sent": True,
+    }
 
 @router.post("/business-documents")
 async def upload_business_document(
@@ -486,9 +535,9 @@ async def upload_business_document(
     db.commit()
     db.refresh(record)
 
-    email_sent = send_document_upload_email(
-        to_email=current_user.email,
-        doc_name=file.filename,
+    await send_upload_emails(
+        user_email=current_user.email,
+        filename=file.filename,
         doc_category="Business",
     )
 
@@ -497,5 +546,5 @@ async def upload_business_document(
         "filename": record.filename,
         "business_type": record.business_type,
         "drive_file_id": record.drive_file_id,
-        "email_sent": email_sent,   # ✅ IMPORTANT
+        "email_sent": True,
     }
