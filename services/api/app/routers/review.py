@@ -1,6 +1,13 @@
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from app.models import AdminDocument
+from app.models import (
+    AdminDocument,
+    PersonalDocument,
+    BusinessDocument,
+    User,
+)
 
 from app.db import get_db
 from app.utils.emailer import send_email
@@ -231,6 +238,67 @@ async def notify_user_review(
     await send_email(
         to=user.email,
         subject="Document Review Update — BookKeepro",
+        body=body
+    )
+
+    return {"status": "notified"}
+
+
+
+
+
+from app.routers.auth import get_current_user_real
+
+
+@router.post("/admin-doc-response")
+async def admin_doc_response(
+    payload: dict,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user_real),
+):
+    if current_user.jwt_role != "user":
+        raise HTTPException(status_code=403, detail="Users only")
+
+    doc_id = payload.get("doc_id")
+    status = payload.get("status")
+    reason = payload.get("reason", "")
+
+    if not doc_id or status not in ("approved", "rejected"):
+        raise HTTPException(status_code=400, detail="Invalid payload")
+
+    doc = db.query(AdminDocument).filter_by(id=doc_id).first()
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    admin = db.query(User).filter_by(id=doc.uploaded_by).first()
+
+    body = f"""
+    <p>Dear Admin,</p>
+
+    <p>
+      The user <b>{current_user.email}</b> has
+      <b>{status.upper()}</b> the document:
+    </p>
+
+    <p><b>{doc.doc_label}</b></p>
+    """
+
+    if status == "rejected":
+        body += f"""
+        <p><strong>Reason for rejection:</strong></p>
+        <p>{reason}</p>
+        """
+
+    body += """
+    <p style="margin-top:20px;">
+      BookKeepro System
+    </p>
+    """
+
+    await send_email(
+        to=admin.email,
+        # subject=f"Admin Document {status.capitalize()} — BookKeepro",
+        subject=f"Admin Return Status {status.capitalize()} — BookKeepro",
         body=body
     )
 

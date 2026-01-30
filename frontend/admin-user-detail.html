@@ -316,10 +316,6 @@
             <button onclick="incPersonalTimeline()">+</button>
           </div>
 
-          <!-- <button class="approve-filing-btn" onclick="approveForFiling()">
-            Approve for filing
-          </button> -->
-          <!-- Personal -->
 <button class="approve-filing-btn" onclick="sendPersonalMail()">
   Send Personal Approval Mail
 </button>
@@ -601,7 +597,9 @@ async function sendPersonalMail() {
     return;
   }
 
-  const timeline = approved.length;
+  // const timeline = approved.length;
+  let timeline = personalTimeline; // or businessTimeline
+
 
   const res = await fetch("/api/review/notify-user", {
     method: "POST",
@@ -635,7 +633,8 @@ async function sendBusinessMail() {
     return;
   }
 
-  const timeline = approved.length;
+  // const timeline = approved.length;
+  let timeline = businessTimeline; // or businessTimeline
 
   const res = await fetch("/api/review/notify-user", {
     method: "POST",

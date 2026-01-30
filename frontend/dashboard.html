@@ -167,6 +167,31 @@
       color: #444;
     }
 
+    .approve-btn {
+      padding: 8px 14px;
+      background: #4CAF50;
+      color: rgb(255, 255, 255);
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .reject-btn {
+      padding: 8px 14px;
+      background: #F44336;
+      color: rgb(255, 255, 255);
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .submit-rejection-btn {
+      padding: 8px 14px;
+      background: #256bb3;
+      color: rgb(255, 255, 255);
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
     @media (max-width: 480px) {
       .actions {
         flex-direction: column;
@@ -230,12 +255,11 @@
 >
 
   <p style="text-align:center;  padding-bottom:10px; font-weight:600; font-size:18px;">
-    <b>Documents uploaded by Admin</b>
+    <b>Returns uploaded by Admin for Review</b>
   </p>
 
   <div id="adminDocsList"></div>
 </div>
-
 
 
   <!-- Footer -->
@@ -333,28 +357,61 @@ async function loadAdminUploadedDocs() {
     console.log("➡️ render item", i, d);
 
     return `
-      <div style="
-        display:flex;
-        justify-content:space-between;
-        align-items:center;
-        padding:12px;
-        margin-bottom:10px;
-        border:1px solid #dceaf5;
-        border-radius:10px;
-        background:#fff
-      ">
-        <span>${d.doc_label}</span>
-        <button
-          class="download-pill"
-          onclick="window.open(
-            'https://drive.google.com/file/d/${d.drive_file_id}/view',
-            '_blank'
-          )"
-        >
-          View
-        </button>
-      </div>
-    `;
+  <div style="
+    border:1px solid #dceaf5;
+    border-radius:12px;
+    padding:14px;
+    margin-bottom:12px;
+    background:#fff
+  ">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <b>${d.doc_label}</b>
+
+      <button
+        class="download-pill"
+        onclick="window.open(
+          'https://drive.google.com/file/d/${d.drive_file_id}/view',
+          '_blank'
+        )">
+        View
+      </button>
+    </div>
+
+    <div style="margin-top:12px; display:flex; gap:10px;">
+      <button class="approve-btn"
+        onclick="approveAdminDoc(${d.id})">
+        Approve
+      </button>
+
+      <button class="reject-btn"
+        onclick="showRejectBox(${d.id})">
+        Reject
+      </button>
+    </div>
+
+    <!-- 🔴 REJECT BOX (THIS WAS MISSING) -->
+    <div id="rejectBox_${d.id}" style="display:none;margin-top:12px;">
+      <textarea
+        id="rejectReason_${d.id}"
+        placeholder="Kindly mention the reason for rejection"
+        style="
+          width:100%;
+          padding:10px;
+          border-radius:8px;
+          border:1px solid #ccc;
+          resize:vertical;
+        "
+      ></textarea>
+
+      <button
+        style="margin-top:8px" class="submit-rejection-btn"
+        onclick="submitRejection(${d.id})">
+        Submit Rejection
+      </button>
+    </div>
+  </div>
+`;
+
   }).join("");
 }
 
@@ -363,6 +420,67 @@ document.addEventListener("DOMContentLoaded", () => {
   loadAdminUploadedDocs();
 });
 </script>
+
+<script>
+function showRejectBox(docId) {
+  const box = document.getElementById(`rejectBox_${docId}`);
+  if (box) box.style.display = "block";
+}
+
+async function approveAdminDoc(docId) {
+  if (!confirm("Approve this document?")) return;
+
+  const res = await fetch("/api/review/admin-doc-response", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token
+    },
+    body: JSON.stringify({
+      doc_id: docId,
+      status: "approved"
+    })
+  });
+
+  if (!res.ok) {
+    alert("❌ Failed to send approval");
+    return;
+  }
+
+  alert("✅ Approval sent to admin");
+}
+
+async function submitRejection(docId) {
+  const textarea = document.getElementById(`rejectReason_${docId}`);
+  const reason = textarea?.value.trim();
+
+  if (!reason) {
+    alert("Please enter rejection reason");
+    return;
+  }
+
+  const res = await fetch("/api/review/admin-doc-response", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token
+    },
+    body: JSON.stringify({
+      doc_id: docId,
+      status: "rejected",
+      reason
+    })
+  });
+
+  if (!res.ok) {
+    alert("❌ Failed to send rejection");
+    return;
+  }
+
+  alert("📩 Rejection sent to admin");
+}
+</script>
+
 
 </body>
 </html>

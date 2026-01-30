@@ -11,7 +11,6 @@ from app.db import get_db
 import app.crud as crud
 from app.schemas import SignupRequest, LoginRequest, TokenResponse
 
-
 # =========================
 # Router
 # =========================
@@ -173,8 +172,10 @@ def get_current_user(
 # =========================
 # Auth Routes
 # =========================
+from app.utils.login_email import send_signup_welcome_email;
+
 @router.post("/signup", response_model=TokenResponse)
-def signup(payload: SignupRequest, db: Session = Depends(get_db)):
+async def signup(payload: SignupRequest, db: Session = Depends(get_db)):
     if crud.get_user_by_email(db, payload.email):
         raise HTTPException(status_code=400, detail="Email already registered")
 
@@ -194,7 +195,12 @@ def signup(payload: SignupRequest, db: Session = Depends(get_db)):
     ).lower()
 
     token = create_access_token(subject=user.email, role=user_role)
-
+    
+    try:
+        await send_signup_welcome_email(user.email, user.name)
+    except Exception as e:
+        print("Signup welcome email failed:", e)
+    
     return {
         "access_token": token,
         "token_type": "bearer",
@@ -203,7 +209,6 @@ def signup(payload: SignupRequest, db: Session = Depends(get_db)):
     }
 
 
-from app.utils.login_email import send_login_welcome_email
 
 @router.post("/login", response_model=TokenResponse)
 async def login(payload: LoginRequest, db: Session = Depends(get_db)):
@@ -241,10 +246,10 @@ async def login(payload: LoginRequest, db: Session = Depends(get_db)):
     token = create_access_token(subject=user.email, role=user_role)
 
     # ✅ NOW THIS IS LEGAL
-    try:
-        await send_login_welcome_email(user.email, user.name)
-    except Exception as e:
-        print("Login welcome email failed:", e)
+    # try:
+    #     await send_login_welcome_email(user.email, user.name)
+    # except Exception as e:
+    #     print("Login welcome email failed:", e)
 
     return {
         "access_token": token,

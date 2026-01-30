@@ -7,7 +7,6 @@ from fastapi.responses import FileResponse
 from app import models
 from app.db import engine
 
-
 log = logging.getLogger("uvicorn.error")
 
 # create app early so mounts can reference it

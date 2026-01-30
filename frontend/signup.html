@@ -54,7 +54,7 @@
   </button>
 </div>
 
-      <button type="submit" class="button">SIGN UP</button>
+      <button type="submit" class="button" id="signupBtn">SIGN UP</button>
       <div style="margin-top:10px">Already have an account? <a href="/login">Login</a></div>
     </form>
   </div>
@@ -65,12 +65,35 @@
   </div>
 
   <script src="/js/signup.js"></script>
-  <script>
+  <!-- <script>
     document.getElementById('signupForm').onsubmit = async function(e) {
       e.preventDefault();
       await signupUser();
     };
-  </script>
+  </script> -->
+  <script>
+document.getElementById("signupForm").onsubmit = async function (e) {
+  e.preventDefault();
+
+  const btn = document.getElementById("signupBtn");
+
+  // ✅ Disable button immediately
+  btn.disabled = true;
+  btn.textContent = "Signing up…";
+
+  try {
+    await signupUser(); // your existing function
+  } catch (err) {
+    console.error(err);
+    alert("Signup failed. Please try again.");
+
+    // ❌ Re-enable only on failure
+    btn.disabled = false;
+    btn.textContent = "SIGN UP";
+  }
+};
+</script>
+
   <script>
 function togglePassword() {
   const pwd = document.getElementById("password");
