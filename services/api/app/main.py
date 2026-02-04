@@ -15,6 +15,7 @@ app = FastAPI(title="BookKeepPro API")
 # create database tables
 models.Base.metadata.create_all(bind=engine)
 
+
 # include routers from app.routers (they should expose `router`)
 try:
     from app.routers import auth, upload  # type: ignore
@@ -160,3 +161,4 @@ def forgot_password_page():
 @app.get("/reset-password", tags=["frontend"])
 def reset_password_page():
     return serve_frontend_file("reset-password.html")
+    

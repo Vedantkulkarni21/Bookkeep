@@ -548,3 +548,122 @@ async def upload_business_document(
         "drive_file_id": record.drive_file_id,
         "email_sent": True,
     }
+
+
+
+
+    @router.delete("/admin/users/{user_id}")
+    def delete_user_completely(
+        user_id: int,
+        db: Session = Depends(get_db),
+        current_user=Depends(get_current_user_real),
+    ):
+        if current_user.jwt_role != "admin":
+            raise HTTPException(status_code=403, detail="Admins only")
+
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        service = get_drive_service()
+
+        # 🔹 Collect ALL documents
+        personal_docs = db.query(PersonalDocument).filter_by(user_id=user_id).all()
+        business_docs = db.query(BusinessDocument).filter_by(user_id=user_id).all()
+        admin_docs = db.query(AdminDocument).filter_by(user_id=user_id).all()
+
+        # 🔹 Delete files from Google Drive
+        def safe_drive_delete(file_id: str):
+            try:
+                service.files().delete(fileId=file_id).execute()
+            except Exception:
+                logger.warning(f"Drive delete failed for {file_id}")
+
+        for d in personal_docs:
+            safe_drive_delete(d.drive_file_id)
+
+        for d in business_docs:
+            safe_drive_delete(d.drive_file_id)
+
+        for d in admin_docs:
+            safe_drive_delete(d.drive_file_id)
+
+        # 🔹 Delete DB records
+        for d in personal_docs:
+            db.delete(d)
+
+        for d in business_docs:
+            db.delete(d)
+
+        for d in admin_docs:
+            db.delete(d)
+
+        # 🔹 Finally delete user
+        db.delete(user)
+        db.commit()
+
+        return {"deleted": True}
+
+
+
+@router.delete("/admin/users/{user_id}")
+def delete_user_completely(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user_real),
+):
+    # 🔐 Admin only
+    if current_user.jwt_role != "admin":
+        raise HTTPException(status_code=403, detail="Admins only")
+
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    drive = get_drive_service()
+
+    # ---------- DELETE ADMIN DOCUMENTS ----------
+    admin_docs = db.query(AdminDocument).filter(
+        AdminDocument.user_id == user_id
+    ).all()
+
+    for doc in admin_docs:
+        try:
+            drive.files().delete(fileId=doc.drive_file_id).execute()
+        except Exception:
+            logger.warning(f"Failed to delete admin drive file {doc.drive_file_id}")
+        db.delete(doc)
+
+    # ---------- DELETE PERSONAL DOCUMENTS ----------
+    personal_docs = db.query(PersonalDocument).filter(
+        PersonalDocument.user_id == user_id
+    ).all()
+
+    for doc in personal_docs:
+        try:
+            drive.files().delete(fileId=doc.drive_file_id).execute()
+        except Exception:
+            logger.warning(f"Failed to delete personal drive file {doc.drive_file_id}")
+        db.delete(doc)
+
+    # ---------- DELETE BUSINESS DOCUMENTS ----------
+    business_docs = db.query(BusinessDocument).filter(
+        BusinessDocument.user_id == user_id
+    ).all()
+
+    for doc in business_docs:
+        try:
+            drive.files().delete(fileId=doc.drive_file_id).execute()
+        except Exception:
+            logger.warning(f"Failed to delete business drive file {doc.drive_file_id}")
+        db.delete(doc)
+
+    # ---------- DELETE USER ----------
+    db.delete(user)
+    db.commit()
+
+    return {
+        "deleted": True,
+        "user_id": user_id,
+        "message": "User and all associated documents deleted successfully",
+    }
