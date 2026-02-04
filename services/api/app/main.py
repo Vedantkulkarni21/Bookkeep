@@ -7,7 +7,6 @@ from fastapi.responses import FileResponse
 from app import models
 from app.db import engine
 
-
 log = logging.getLogger("uvicorn.error")
 
 # create app early so mounts can reference it
@@ -15,6 +14,7 @@ app = FastAPI(title="BookKeepPro API")
 
 # create database tables
 models.Base.metadata.create_all(bind=engine)
+
 
 # include routers from app.routers (they should expose `router`)
 try:
@@ -126,6 +126,9 @@ def logout():
 
 
 
+from app.routers import upload
+app.include_router(upload.router)
+
 
 from app.routers import contact
 app.include_router(contact.router)
@@ -158,3 +161,4 @@ def forgot_password_page():
 @app.get("/reset-password", tags=["frontend"])
 def reset_password_page():
     return serve_frontend_file("reset-password.html")
+    

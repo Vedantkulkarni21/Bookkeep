@@ -178,8 +178,6 @@ const docs = [
     name: "Individual taxpayer organizer sole proprietorship rental 2025",
     download: "./images/individual_taxpayer_organizer_sole_proprietorship_rental_2025-doc-1.pdf"
   },
-  { name: "W2", download: null },
-  { name: "1099", download: null }
 ];
 
 const uploadedFiles = {};
@@ -242,7 +240,7 @@ async function upload(i) {
   fd.append("file", file);
   fd.append("doc_type", docs[i].name);
 
-  const res = await fetch("/api/upload/personal-document", {
+  const res = await fetch("/api/upload/personal-documents", {
     method: "POST",
     headers: { Authorization: "Bearer " + token },
     body: fd
@@ -253,20 +251,28 @@ async function upload(i) {
     return;
   }
 
-  const data = await res.json();
-  uploadedFiles[i] = data.drive_file_id || data.file_id;
+const data = await res.json();
+uploadedFiles[i] = {
+  id: data.id,                 // ✅ DB id
+  drive: data.drive_file_id    // ✅ Drive id
+};
 
-  status.textContent = "Uploaded ✓";
-  document.getElementById(`view${i}`).style.display = "inline-block";
-  document.getElementById(`delete${i}`).style.display = "inline-block";
+status.textContent = "Uploaded ✓";
+status.style.color = "#2e7d32";
+
+document.getElementById(`view${i}`).style.display = "inline-block";
+document.getElementById(`delete${i}`).style.display = "inline-block";
+
 }
 
 /* ================= VIEW ================= */
 function viewFile(i) {
-  const id = uploadedFiles[i];
-  if (!id) return;
-  window.open(`https://drive.google.com/file/d/${id}/view`, "_blank");
+  window.open(
+    `https://drive.google.com/file/d/${uploadedFiles[i].drive}/view`,
+    "_blank"
+  );
 }
+
 
 /* ================= DELETE (MAIN DOCS) ================= */
 async function deleteFile(i) {
@@ -278,47 +284,38 @@ async function deleteFile(i) {
 
   btn.disabled = true;
 
-  const id = uploadedFiles[i];
-  if (!id) {
-    btn.disabled = false;
-    return;
-  }
+ const doc = uploadedFiles[i];
+const res = await fetch(`/api/upload/personal-documents/${doc.id}`, {
+  method: "DELETE",
+  headers: { Authorization: "Bearer " + token }
+});
 
-  const res = await fetch(`/api/upload/personal-document/${id}`, {
-    method: "DELETE",
-    headers: { Authorization: "Bearer " + token }
-  });
+if (!res.ok) {
+  alert("Failed to delete document");
+  btn.disabled = false;
+  return;
+}
 
-  if (!res.ok) {
-    alert("Failed to delete document");
-    btn.disabled = false;
-    return;
-  }
+delete uploadedFiles[i];
+document.getElementById(`status${i}`).textContent = "Deleted";
+document.getElementById(`view${i}`).style.display = "none";
+btn.style.display = "none";
+document.getElementById(`file${i}`).value = "";
 
-  delete uploadedFiles[i];
-  document.getElementById(`status${i}`).textContent = "Deleted";
-  document.getElementById(`view${i}`).style.display = "none";
-  btn.style.display = "none";
-  document.getElementById(`file${i}`).value = "";
-
-  alert("Document deleted successfully");
 }
 
 /* ================= OTHER DOCUMENTS ================= */
-function addOtherDocItem(name, id) {
+function addOtherDocItem(name, doc) {
   const div = document.createElement("div");
-  div.className = "small-muted";
-  div.setAttribute("data-id", id);
 
   div.innerHTML = `
     • ${name}
     <button class="view-btn-inline"
-      onclick="window.open('https://drive.google.com/file/d/${id}/view','_blank')">
+      onclick="window.open('https://drive.google.com/file/d/${doc.drive}/view','_blank')">
       View
     </button>
-    <button class="delete-btn"
-      style="display:inline-block"
-      onclick="deleteOtherDoc('${id}', this)">
+    <button class="delete-btn" style="display:inline-block"
+      onclick="deleteOtherDoc(${doc.id}, this)">
       Delete
     </button>
   `;
@@ -334,7 +331,7 @@ async function deleteOtherDoc(id, btn) {
 
   btn.disabled = true;
 
-  const res = await fetch(`/api/upload/personal-document/${id}`, {
+  const res = await fetch(`/api/upload/personal-documents/${id}`, {
     method: "DELETE",
     headers: { Authorization: "Bearer " + token }
   });
@@ -358,16 +355,20 @@ document.getElementById("extraFile").addEventListener("change", async e => {
     fd.append("file", file);
     fd.append("doc_type", "Other");
 
-    const res = await fetch("/api/upload/personal-document", {
+    const res = await fetch("/api/upload/personal-documents", {
       method: "POST",
       headers: { Authorization: "Bearer " + token },
       body: fd
     });
 
     if (res.ok) {
-      const data = await res.json();
-      addOtherDocItem(file.name, data.drive_file_id || data.file_id);
-    }
+  const data = await res.json();
+  addOtherDocItem(file.name, {
+    id: data.id,
+    drive: data.drive_file_id
+  });
+}
+
   }
 
   extraStatus.textContent = "Uploaded ✓";
@@ -376,7 +377,7 @@ document.getElementById("extraFile").addEventListener("change", async e => {
 
 /* ================= LOAD FROM DB ================= */
 async function loadSavedDocuments() {
-  const res = await fetch("/api/upload/my-documents", {
+  const res = await fetch("/api/upload/personal-documents", {
     headers: { Authorization: "Bearer " + token }
   });
 
@@ -384,15 +385,25 @@ async function loadSavedDocuments() {
   const files = await res.json();
 
   files.forEach(f => {
-    const index = docs.findIndex(d => d.name === f.doc_type);
+    const index = docs.findIndex(
+      d => d.name.trim().toLowerCase() === f.doc_type?.trim().toLowerCase()
+    );
 
     if (index !== -1) {
-      uploadedFiles[index] = f.drive_file_id || f.file_id;
+      uploadedFiles[index] = {
+        id: f.id,
+        drive: f.drive_file_id
+      };
+
       document.getElementById(`status${index}`).textContent = "Uploaded ✓";
       document.getElementById(`view${index}`).style.display = "inline-block";
       document.getElementById(`delete${index}`).style.display = "inline-block";
     } else {
-      addOtherDocItem(f.filename, f.drive_file_id || f.file_id);
+      addOtherDocItem(f.filename, {
+        id: f.id,
+        drive: f.drive_file_id
+      });
+
     }
   });
 }
@@ -402,6 +413,19 @@ renderDocs();
 loadSavedDocuments();
 </script>
 
+<script>
+  const data = await res.json();
+
+if (data.email_sent) {
+  alert("✅ Document uploaded. Confirmation email sent.");
+} else {
+  alert(
+    "⚠️ Document uploaded, but email could NOT be sent.\n" +
+    "Please contact support if you do not receive confirmation."
+  );
+}
+
+</script>
 
 </body>
 </html>
