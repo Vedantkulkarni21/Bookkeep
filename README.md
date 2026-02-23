@@ -38,7 +38,7 @@ The system is designed with a **backend-first architecture** using **FastAPI**, 
 - **FastAPI**
 - **SQLAlchemy**
 - **JWT Authentication**
-- **REST APIs**
+- **REST APIs**.
 
 ### Database
 - **MongoDB Atlas** (for document-related data)
