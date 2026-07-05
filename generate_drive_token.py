@@ -6,10 +6,10 @@ from google_auth_oauthlib.flow import Flow
 
 SCOPES = ["https://www.googleapis.com/auth/drive"]
 REDIRECT_URI = "http://localhost:8000/auth/google/callback"
-
+#nddm
 def main():
     if not os.path.exists("credentials.json"):
-        print("❌ credentials.json not found")
+        print("❌ crede ntials.json not found")
         return
 
     flow = Flow.from_client_secrets_file(
